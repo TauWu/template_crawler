@@ -38,11 +38,11 @@ Template Crawler | [@TauWu](https://github.com/TauWu/) | 2018-07-19 | Linux (Bas
 ### Softwares Needs
 
 ```sh
-apt-get install python3		# Python interpreter.
-apt-get install python3-pip	# Pip tools to install 3rd-party modules.
+apt-get install python3			# Python interpreter.
+apt-get install python3-pip		# Pip tools to install 3rd-party modules.
 apt-get install redis-server	# Save Hash Map data.
 apt-get install mysql-server	# Save structured data.
-apt-get install python-bs4	# Parser HTML files.
+apt-get install python-bs4		# Parse HTML files.
 ```
 
 ### Module Needs
@@ -52,9 +52,9 @@ pip3 install requests		# Better method to start requests.
 pip3 install PyMySQL		# Connect to MySQL and control it.
 pip3 install configparser	# Read and write config files.
 pip3 install beautifulsoup4	# Parser HTML files.
-pip3 install lxml		# Read HTML files as a balance tree.
+pip3 install lxml			# Read HTML files as a balance tree.
 pip3 install fake-useragent	# Provide random UA when request a host.
-pip3 install redis		# Connect to Redis server and control it. 
+pip3 install redis			# Connect to Redis server and control it. 
 ```
 
 ## Crawler Types
