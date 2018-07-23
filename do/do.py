@@ -3,6 +3,8 @@ from module.config.crawler import CrawlerConfigReader
 from module.request.test import HTTPProxiesTest
 from module.request.http import HTTPListRequest
 
+from util.common.tools import finder
+
 
 class Do(object):
 
@@ -37,6 +39,7 @@ class Do(object):
         Start Process from here.
         '''
         self.list_res_iter = self.__req_list__
+        self.list_dat_iter = self.__parser_list__
 
     @property
     def __load__(self):
@@ -52,11 +55,23 @@ class Do(object):
         Start a request to get list info from list websites/APIs.
         '''
         # You are supposed to create a child process to do this.
-        # Crawler config info.
-
+        
         req = HTTPListRequest(self.crawler_conf["list_crawler"])
         yield from req.list_res_iter
 
     @property
     def __parser_list__(self):
-        pass
+        '''__parser_list__
+        Parse the data from req of list websites/APIs.
+        '''
+        parser = self.crawler_conf["list_parser"]
+        find_data = parser["data_path"].split('.')
+        parser.pop('data_path')
+
+        for result in self.list_res_iter:
+            data_list = finder(result, find_data)
+            for data in data_list:
+                rtn_data = dict()
+                for k, v in zip(parser.keys(), parser.values()):
+                    rtn_data[k] = data[v]
+                print(rtn_data, '\n')
