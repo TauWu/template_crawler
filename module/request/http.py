@@ -25,6 +25,7 @@ class HTTPListRequest(object):
 
         # Result set.
         url_list    = list()
+        data_list   = list()
         end_flag    = True
 
         try:
@@ -39,17 +40,25 @@ class HTTPListRequest(object):
 
             for idxx in range(0, mutil):
                 url_list.append(url_tpl.format(idx+idxx*params))
-            
-            mutil_req = ProxiesRequests(url_list)
+                if method == 3:
+                    data = json.loads(self.crawler['data'])
+                    data[self.crawler['data_key']] = idx+idxx*params
+                    data_list.append(json.loads(self.crawler['data']))
+                    
+            if method == 1:
+                mutil_req = ProxiesRequests(url_list)
+            elif method == 3:
+                mutil_req = ProxiesRequests(url_list, data_list=data_list)
+
             if "headers" in self.sys.keys():
                 mutil_req.add_headers(json.loads(self.sys['headers']))
             res_list  = mutil_req.req_content_list
             
             for res in res_list:
-                if method == 1:
+                if method == 1 or method == 3:
                     res = json.loads(res[0].decode('utf-8'))
                     total = finder(res, find_total)
-                    if idx > total and end_flag:
+                    if idx > int(total) and end_flag:
                         end_flag = False
                 else:
                     pass

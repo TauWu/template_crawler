@@ -46,9 +46,13 @@ class ProxiesRequests(ProxiesHeaders):
     这里发起的请求应当是一个待请求的 列表
 
     '''
-    def __init__(self, urls=[]):
+    def __init__(self, urls=[], **kwargs):
         ProxiesHeaders.__init__(self)
         self._urls = urls
+        self._method = 'GET'
+        if "data_list" in kwargs.keys():
+            self._datas = kwargs['data_list']
+            self._method = 'POST'
         self.__auth_with_time = self.auth_with_time
         self.__proxy_auth = self.__auth_with_time[0]
         self.__timestamp = self.__auth_with_time[1]
@@ -62,11 +66,11 @@ class ProxiesRequests(ProxiesHeaders):
     def _get_headers_(self):
         return self._headers
 
-    def _proxy_request_(self, url):
-        self._proxy_content_singal_(url)
+    def _proxy_request_(self, url, *args):
+        self._proxy_content_singal_(url, *args)
         self._content_dict[url] = self._single_content
 
-    def _proxy_content_singal_(self, url):
+    def _proxy_content_singal_(self, url, *args):
         '''发起单个的代理请求 可被继承'''
 
         # 去除代理不安全的警告 - InsecureRequestWarning
@@ -79,12 +83,15 @@ class ProxiesRequests(ProxiesHeaders):
             idx += 1
             if idx > 10:
                 self._single_content = b"{}"
-                # print("BAD REQUEST")
+                print("BAD REQUEST")
                 break
-            # print("Try {} Times...".format(idx))
+
             try:
             # URL 请求发送
-                req = requests.get(url, headers=self._headers, proxies=self._proxy, allow_redirects=False, timeout=2, verify=False)#
+                if self._method == 'GET':
+                    req = requests.get(url, headers=self._headers, proxies=self._proxy, allow_redirects=False, timeout=2, verify=False)#
+                else:
+                    req = requests.post(url, headers=self._headers, proxies=self._proxy, allow_redirects=False, timeout=2, verify=False, data=args[0])#
                 req_content = req.content
 
                 if str(req_content).find("The number of requests exceeds the limit") != -1 or str(req_content).find("Concurrent number exceeds limit") != -1 or str(req_content) == "b''":
@@ -101,6 +108,7 @@ class ProxiesRequests(ProxiesHeaders):
                     
                 self._single_content = req_content
                 break
+
             except Exception as e:
                 # req_warn("请求失败！正在重新发起... %s"%str(e))
                 time.sleep(0.5)
@@ -110,8 +118,12 @@ class ProxiesRequests(ProxiesHeaders):
     def _batch_request_(self):
         '''协程执行请求 可被继承'''
         task_list = []
-        for url in self._urls:
-            task_list.append(gevent.spawn(self._proxy_request_, url))
+        if self._method == 'POST':
+            for url, data in zip(self._urls, self._datas):
+                task_list.append(gevent.spawn(self._proxy_request_, url, data))
+        else:
+            for url in self._urls:
+                task_list.append(gevent.spawn(self._proxy_request_, url))
         gevent.joinall(task_list)
 
     @property

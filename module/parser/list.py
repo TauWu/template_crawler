@@ -23,4 +23,7 @@ class ParserList(object):
                 rtn_data = dict()
                 for k, v in zip(parser.keys(), parser.values()):
                     rtn_data[k] = data[v]
-                self.rds.__update_dict_to_redis__(".".join([rtn_data[k] for k in self.rds_key.split('.')]), rtn_data)
+                if len(self.rds_key.split('.')) > 1:
+                    self.rds.__update_dict_to_redis__(".".join([rtn_data[k] for k in self.rds_key.split('.')]), rtn_data)
+                else:
+                    self.rds.__update_dict_to_redis__(rtn_data[self.rds_key], rtn_data)

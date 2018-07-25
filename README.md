@@ -20,10 +20,15 @@ Template Crawler | [@TauWu](https://github.com/TauWu/) | 2018-07-19 | Linux (Bas
 	- [x] Create Module `Config Parser`
 	- [x] Create Module `Common Crawler`
 
-- [ ] Test
+- [x] Test
 	- [x] Test House Info from [ZiRoom](http://sh.ziroom.com)
-	- [ ] Test House Info from [qk365](http://www.qk365.com)
+	- [x] Test House Info from [qk365](http://www.qk365.com)
 	- [x] Test House Info from [lianjia](https://sh.lianjia.com)
+
+- [ ] Full Test
+	- [ ] Test Full House Info from [ZiRoom](http://sh.ziroom.com)
+	- [ ] Test Full House Info from [qk365](http://www.qk365.com)
+	- [ ] Test Full House Info from [lianjia](https://sh.lianjia.com)
 
 ## Future TODOs
 
