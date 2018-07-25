@@ -75,7 +75,23 @@ class RedisController():
     def rscan(self):
         '''扫描Redis'''
         for key in self._redis_conn.keys():
-            yield key.decode('utf-8'), self.rget(key).replace("\'","\"")
+            yield key.decode('utf-8'), self.rget(key)
+
+    def __update_dict_to_redis__(self, k, v):
+        '''__update_dict_to_redis__
+        Merge dict rather than replace it.
+        '''
+        if self.rget(k) is not None:
+            bf_val = self.rget(k)
+            try:
+                bf_val = json.loads(bf_val)
+                bf_val = dict(bf_val, **v)
+                self.rset(k, bf_val)
+            except Exception as e:
+                print("__update_dict_to_redis__ failed. {}".format(e))
+                pass
+        else:
+            self.rset(k, v)
 
 if __name__ == "__main__":
     pass
