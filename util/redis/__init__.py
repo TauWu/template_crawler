@@ -3,49 +3,42 @@
 from redis import Redis, ConnectionPool
 import json
 from util.config import ConfigReader
-from constant.logger import *
+from constant.config import REDIS_CFG
 
 def equal(object1, object2):
-    obj1_type = type(object1)
-    obj2_type = type(object2)
-
-    # 判断类型
-    if obj1_type != obj2_type:
-        return False
+    if object1 == object2:
+        return True
     else:
-        # 是json？
-        if obj1_type == str:
-            try:
-                object1_json = json.loads(object1.replace("\'","\""))
-                object2_json = json.loads(object2.replace("\'","\""))
-            except Exception:
-                pass
-            else:
-                if object1_json == object2_json:
-                    return True
-        else:
-            if object1 == object2:
-                return True
-            else:
-                return False
+        return False
 
 
 class RedisController():
         
-    def __init__(self, section_name="redis_hs"):
-        (host, port, self.db) = ConfigReader.read_section_keylist(section_name, ["host","port","db"])
+    def __init__(self, db):
+        host, port = REDIS_CFG['host'], REDIS_CFG['port']
+        self.db = db
         self.__pool__ = ConnectionPool(host=host, port=port, db=self.db)
         self._redis_conn = Redis(connection_pool=self.__pool__)
-        base_info("Redis连接%s创建成功！[%s:%s db%s]"%(section_name, host, port, self.db))
+        print("Redis连接创建成功！[%s:%s db%s]"%(host, port, self.db))
 
     def rset(self, key, value):
         rvalue = self.rget(key)
-        if equal(str(value), str(rvalue)):
-            redis_info("db%s:set【%s => <=】"%(self.db, key))
+        if rvalue is not None:
+            try:
+                rvalue = json.loads(rvalue)
+            except Exception:
+                pass
+
+        if equal(value, rvalue):
+            print("db{}:set【{} => <=】".format(self.db, key))
         elif rvalue == None:
-            redis_info("db%s:set【%s () => %s】"%(self.db, key, value))
+            print("db{}:set【{} () => {}】".format(self.db, key, value))
         else:
-            redis_info("db%s:set【%s %s => %s】"%(self.db, key, rvalue, value))
+            print("db{}:set【{} {} => {}】".format(self.db, key, rvalue, value))
+        
+        if isinstance(value, dict):
+            value = json.dumps(value)
+        
         self._redis_conn.set(key, value)
     
     def rget(self, key):
@@ -61,7 +54,7 @@ class RedisController():
 
     def rdel(self, key):
         self._redis_conn.delete(key)
-        redis_info("db%s:删除【%s】的缓存"%(self.db,key))
+        print("db%s:删除【%s】的缓存"%(self.db,key))
 
     @property
     def dbsize(self):

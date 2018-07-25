@@ -9,6 +9,8 @@ def finder(result, find):
         result after find by path.
     '''
     # print("********\n{}\n{}\n".format(result, find))
+    if len(find) == 1:
+        return result[find[0]]
 
     if isinstance(result, dict):
         result = result[find[0]]
