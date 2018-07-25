@@ -25,7 +25,13 @@ class ParserDetail(object):
             if int(crawler['method']) == 2:
                 xml_data = etree.HTML(res)
                 for k, v in zip(parser.keys(), parser.values()):
-                    rtn_data[k] = xml_data.xpath(v)[0].xpath('./text()')[0].strip()
+                    try:
+                        rtn_data[k] = xml_data.xpath(v)[0].xpath('./text()')[0].strip()
+                    except Exception as e:
+                        with open("test{}.html".format(idxx), "w") as web:
+                            web.write(str(res))
+
+                        print("Err: {} xml_data:{}".format(e, res))
                 self.rds.__update_dict_to_redis__(".".join(idxx), rtn_data)
                 
             else:

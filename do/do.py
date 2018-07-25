@@ -66,7 +66,7 @@ class Do(object):
         '''
         # You are supposed to create a child process to do this.
         
-        req = HTTPListRequest(self.crawler_conf["list_crawler"])
+        req = HTTPListRequest(self.crawler_conf)
         yield from req.list_res_iter
 
     @property

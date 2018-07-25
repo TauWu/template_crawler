@@ -15,7 +15,7 @@ from constant.config import conf_kv_func
 # 代理 用户验证部分 - 一天检查一次，所以多次调用时不重复此步骤
 class ProxiesHeaders():
     '''
-    使用本代理 需要在请求头中添加Proxy-Authorization字段
+    使用本代理 需要在请求头中添加 Proxy-Authorization 字段
 
     '''
     def __init__(self):
@@ -74,7 +74,14 @@ class ProxiesRequests(ProxiesHeaders):
         from requests.packages.urllib3.exceptions import InsecureRequestWarning 
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
+        idx = 0
         while True:
+            idx += 1
+            if idx > 10:
+                self._single_content = b"{}"
+                # print("BAD REQUEST")
+                break
+            # print("Try {} Times...".format(idx))
             try:
             # URL 请求发送
                 req = requests.get(url, headers=self._headers, proxies=self._proxy, allow_redirects=False, timeout=2, verify=False)#
@@ -83,8 +90,15 @@ class ProxiesRequests(ProxiesHeaders):
                 if str(req_content).find("The number of requests exceeds the limit") != -1 or str(req_content).find("Concurrent number exceeds limit") != -1 or str(req_content) == "b''":
                     # 端口转发太频繁 重新发起请求
                     # 针对安居客 返回数据为空 重新发起请求
+                    print("DEBUG1")
                     time.sleep(0.5)
                     continue
+
+                if str(req_content).find("Bad Gateway") != -1 or str(req_content).find("The requested URL could not be retrieved") != -1:
+                    print("DEBUG2")
+                    time.sleep(0.5)
+                    continue
+                    
                 self._single_content = req_content
                 break
             except Exception as e:

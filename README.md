@@ -12,18 +12,18 @@ Template Crawler | [@TauWu](https://github.com/TauWu/) | 2018-07-19 | Linux (Bas
 
 ## TODOs
 
-- [ ] Code
-	- [ ] Transplant Module `Downloader` from [spider\_anjuke](https://github.com/TauWu/spider_anjuke)
-	- [ ] Transplant Module `Proxies` from [spider\_anjuke](https://github.com/TauWu/spider_anjuke)
-	- [ ] Transplant Module `Parser` from [spider\_anjuke](https://github.com/TauWu/spider_anjuke)
-	- [ ] Transplant Module `Common` from [spider\_anjuke](https://github.com/TauWu/spider_anjuke)
-	- [ ] Create Module `Config Parser`
-	- [ ] Create Module `Common Crawler`
+- [x] Code
+	- [x] Transplant Module `Downloader` from [spider\_anjuke](https://github.com/TauWu/spider_anjuke)
+	- [x] Transplant Module `Proxies` from [spider\_anjuke](https://github.com/TauWu/spider_anjuke)
+	- [x] Transplant Module `Parser` from [spider\_anjuke](https://github.com/TauWu/spider_anjuke)
+	- [x] Transplant Module `Common` from [spider\_anjuke](https://github.com/TauWu/spider_anjuke)
+	- [x] Create Module `Config Parser`
+	- [x] Create Module `Common Crawler`
 
 - [ ] Test
-	- [ ] Test House Info from [ZiRoom](http://sh.ziroom.com)
+	- [x] Test House Info from [ZiRoom](http://sh.ziroom.com)
 	- [ ] Test House Info from [qk365](http://www.qk365.com)
-	- [ ] Test House Info from [lianjia](https://sh.lianjia.com)
+	- [x] Test House Info from [lianjia](https://sh.lianjia.com)
 
 ## Future TODOs
 
@@ -48,13 +48,13 @@ apt-get install python-bs4		# Parse HTML files.
 ### Module Needs
 
 ```sh
-pip3 install requests		# Better method to start requests.
-pip3 install PyMySQL		# Connect to MySQL and control it.
-pip3 install configparser	# Read and write config files.
-pip3 install beautifulsoup4	# Parser HTML files.
-pip3 install lxml			# Read HTML files as a balance tree.
-pip3 install fake-useragent	# Provide random UA when request a host.
-pip3 install redis			# Connect to Redis server and control it. 
+pip3 install requests			# Better method to start requests.
+pip3 install PyMySQL			# Connect to MySQL and control it.
+pip3 install configparser		# Read and write config files.
+pip3 install beautifulsoup4		# Parser HTML files.
+pip3 install lxml				# Read HTML files as a balance tree.
+pip3 install fake-useragent		# Provide random UA when request a host.
+pip3 install redis				# Connect to Redis server and control it. 
 ```
 
 ## Crawler Types

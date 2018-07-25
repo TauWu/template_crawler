@@ -11,7 +11,8 @@ import json
 class HTTPListRequest(object):
 
     def __init__(self, crawler_conf):
-        self.crawler = crawler_conf
+        self.crawler = crawler_conf['list_crawler']
+        self.sys     = crawler_conf['sys_conf']
 
     @property
     def list_res_iter(self):
@@ -40,6 +41,8 @@ class HTTPListRequest(object):
                 url_list.append(url_tpl.format(idx+idxx*params))
             
             mutil_req = ProxiesRequests(url_list)
+            if "headers" in self.sys.keys():
+                mutil_req.add_headers(json.loads(self.sys['headers']))
             res_list  = mutil_req.req_content_list
             
             for res in res_list:
@@ -64,14 +67,17 @@ class HTTPDetailRequest(object):
     def __init__(self, rds, crawler_conf):
         self.rds = rds
         self.crawler_conf = crawler_conf
+        self.sys          = crawler_conf['sys_conf']
 
     @property
     def detail_res_iter(self):
         '''detail_res_iter
         '''
         for urls, task, idxx_list in self.__detail_task__:
-            req = ProxiesRequests(urls)
-            res_list = req.req_content_list
+            mutil_req = ProxiesRequests(urls)
+            if "headers" in self.sys.keys():
+                mutil_req.add_headers(json.loads(self.sys['headers']))
+            res_list = mutil_req.req_content_list
             for res, idxx in zip(res_list, idxx_list):
                 yield res[0], task, idxx
 
