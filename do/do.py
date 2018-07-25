@@ -41,8 +41,8 @@ class Do(object):
         '''do
         Start Process from here.
         '''
-        self.list_res_iter      = self.__req_list__
-        self.list_dat_iter      = self.__parser_list__
+        # self.list_res_iter      = self.__req_list__
+        # self.list_dat_iter      = self.__parser_list__
         self.detail_res_iter    = self.__req_detail__
         self.detail_dat_iter    = self.__parser_detail__
 
@@ -87,33 +87,39 @@ class Do(object):
     def __parser_detail__(self):
         '''__parser_detail__
         '''
-        import json 
+        import json
+        from lxml import etree
+
         for res, task, idxx in self.detail_res_iter:
             crawler = self.crawler_conf['detail_crawlers'][task-1]
             parser = self.crawler_conf['detail_parsers'][task-1]
-
-            if int(crawler['method']) == 2:
-                continue
-
-            find_data = parser["data_path"].split('.')            
-            parser.pop('data_path')
+            
             rtn_data = dict()
-            res = json.loads(res.decode('utf-8'))
-            data = finder(res, find_data)
-            for k, v in zip(parser.keys(), parser.values()):
-                rtn_data[k] = data[v]
+            if int(crawler['method']) == 2:
+                xml_data = etree.HTML(res)
+                for k, v in zip(parser.keys(), parser.values()):
+                    rtn_data[k] = xml_data.xpath(v)[0].xpath('./text()')[0].strip()
+                self.__update_dict_to_redis__(".".join(idxx), rtn_data)
+                
+            else:
+                find_data = parser["data_path"].split('.')            
+                parser.pop('data_path')        
+                res = json.loads(res.decode('utf-8'))
+                data = finder(res, find_data)
+                for k, v in zip(parser.keys(), parser.values()):
+                    rtn_data[k] = data[v]
                 self.__update_dict_to_redis__('.'.join(idxx), rtn_data)
-            parser['data_path'] = '.'.join(find_data)
+                parser['data_path'] = '.'.join(find_data)
 
 
     @property
     def __req_detail__(self):
-        import json
-        
-        for urls, task, idxx in self.__detail_task__:
+        '''__req_detail__
+        '''
+        for urls, task, idxx_list in self.__detail_task__:
             req = ProxiesRequests(urls)
             res_list = req.req_content_list
-            for res in res_list:
+            for res, idxx in zip(res_list, idxx_list):
                 yield res[0], task, idxx
 
     @property
@@ -128,20 +134,24 @@ class Do(object):
         params:
             task: task No.
         '''
-        mutil    = int(REQUEST_CFG["mutil"])
-        task     = int(task)
-        params   = crawler['params'].split('.')
-        url      = crawler['detail_url']
-        url_list = list()
+        mutil           = int(REQUEST_CFG["mutil"])
+        task            = int(task)
+        params          = crawler['params'].split('.')
+        url             = crawler['detail_url']
+        url_list        = list()
+        rds_idx_list    = list()
                 
         for kx, _ in self.__show_all_in_redis__:
             
-            idxx = kx.split('.')[:len(params)]
+            rds_idx = kx.split('.')
+            idxx = rds_idx[:len(params)]
             url_req = url.format(*idxx)
             url_list.append(url_req)
+            rds_idx_list.append(rds_idx)
             if len(url_list) >= mutil:
-                yield url_list, task, idxx
+                yield url_list, task, rds_idx_list
                 url_list = list()
+                rds_idx_list= list()
     
     @property
     def __show_all_in_redis__(self):

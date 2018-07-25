@@ -56,6 +56,7 @@ class ProxiesRequests(ProxiesHeaders):
         self._headers = {"Proxy-Authorization": self.__proxy_auth}
         self._single_content = None
         self._content = list()
+        self._content_dict = dict()
 
     @property
     def _get_headers_(self):
@@ -63,7 +64,7 @@ class ProxiesRequests(ProxiesHeaders):
 
     def _proxy_request_(self, url):
         self._proxy_content_singal_(url)
-        self._content.append((self._single_content, url))
+        self._content_dict[url] = self._single_content
 
     def _proxy_content_singal_(self, url):
         '''发起单个的代理请求 可被继承'''
@@ -104,6 +105,8 @@ class ProxiesRequests(ProxiesHeaders):
         # req_info("开始发起%d条请求..."%(len(self._urls)))
         self._batch_request_
         # req_info("请求发送完成！")
+        for url in self._urls:
+            self._content.append((self._content_dict[url], url))
         return self._content
 
     def add_headers(self, headers):
