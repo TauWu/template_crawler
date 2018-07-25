@@ -85,7 +85,7 @@ class ProxiesRequests(ProxiesHeaders):
                 self._single_content = b"{}"
                 print("BAD REQUEST")
                 break
-
+            print("*******", url, args)
             try:
             # URL 请求发送
                 if self._method == 'GET':

@@ -43,7 +43,7 @@ class HTTPListRequest(object):
                 if method == 3:
                     data = json.loads(self.crawler['data'])
                     data[self.crawler['data_key']] = idx+idxx*params
-                    data_list.append(json.loads(self.crawler['data']))
+                    data_list.append(data)
                     
             if method == 1:
                 mutil_req = ProxiesRequests(url_list)
