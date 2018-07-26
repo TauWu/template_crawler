@@ -7,6 +7,7 @@ from util.web.proxies import ProxiesRequests
 from constant.config import REQUEST_CFG
 
 import json
+from lxml import etree
 
 class HTTPListRequest(object):
 
@@ -47,11 +48,14 @@ class HTTPListRequest(object):
                     
             if method == 1:
                 mutil_req = ProxiesRequests(url_list)
+            elif method == 2:
+                mutil_req = ProxiesRequests(url_list)
             elif method == 3:
                 mutil_req = ProxiesRequests(url_list, data_list=data_list)
 
             if "headers" in self.sys.keys():
                 mutil_req.add_headers(json.loads(self.sys['headers']))
+
             res_list  = mutil_req.req_content_list
             
             for res in res_list:
@@ -61,8 +65,14 @@ class HTTPListRequest(object):
                     if idx > int(total) and end_flag:
                         end_flag = False
                 else:
-                    pass
-
+                    try:
+                        res = etree.HTML(res[0].decode('utf-8'))
+                        total = res.xpath(crawler['total'])[0].xpath('./text()')[0]
+                    except Exception as e:
+                        total = 999
+                        print('ERR: total {}'.format(e))
+                    if idx > int(total) and end_flag:
+                        end_flag = False
                 yield res
                                 
             idx += params*mutil
