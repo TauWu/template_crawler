@@ -73,6 +73,8 @@ class ProxiesRequests(ProxiesHeaders):
     def _proxy_content_singal_(self, url, *args):
         '''发起单个的代理请求 可被继承'''
 
+        print("start request", url, *args)
+
         # 去除代理不安全的警告 - InsecureRequestWarning
         import requests
         from requests.packages.urllib3.exceptions import InsecureRequestWarning 
@@ -114,7 +116,7 @@ class ProxiesRequests(ProxiesHeaders):
 
             except Exception as e:
                 # req_warn("请求失败！正在重新发起... %s"%str(e))
-                print('Request Err {}'.format(e))
+                # print('Request Err {}'.format(e))
                 time.sleep(0.5)
                 continue
 

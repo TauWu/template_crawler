@@ -39,6 +39,8 @@ class HTTPListRequest(object):
         idx = 0
         while end_flag:
 
+            url_list = list()
+
             for idxx in range(0, mutil):
                 url_list.append(url_tpl.format(idx+idxx*params))
                 if method == 3:
@@ -63,6 +65,7 @@ class HTTPListRequest(object):
                     res = json.loads(res[0].decode('utf-8'))
                     try:
                         total = finder(res, find_total)
+                        print("totaldebug:{}".format(total))
                         if idx > int(total) and end_flag:
                             end_flag = False
                     except Exception:
@@ -71,14 +74,16 @@ class HTTPListRequest(object):
                     try:
                         res = etree.HTML(res[0].decode('utf-8'))
                         total = res.xpath(crawler['total'])[0].xpath('./text()')[0]
+                        print("totaldebug:{}".format(total))
                     except Exception as e:
                         total = 999
                         print('ERR: total {}'.format(e))
-                    if idx > int(total) and end_flag:
+                    if idx > int(total) and end_flag:                        
                         end_flag = False
                 yield res
                                 
             idx += params*mutil
+            print("idxdebug {}".format(idx))
 
             # Here is a debugger.
             # if idx > 0:

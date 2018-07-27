@@ -39,13 +39,13 @@ class Do(object):
         '''do
         Start Process from here.
         '''
-        print("!!!!!!!!!!!!!")
+        print("Process 1")
         self.list_res_iter      = self.__req_list__
         self.__parser_list__
-        print("!!!!!!!!!!!!!")
+        print("Process 2")
         self.detail_res_iter    = self.__req_detail__
         self.__parser_detail__
-        print("!!!!!!!!!!!!!")
+        print("Process 3")
 
     @property
     def __load__(self):
