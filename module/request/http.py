@@ -61,9 +61,12 @@ class HTTPListRequest(object):
             for res in res_list:
                 if method == 1 or method == 3:
                     res = json.loads(res[0].decode('utf-8'))
-                    total = finder(res, find_total)
-                    if idx > int(total) and end_flag:
-                        end_flag = False
+                    try:
+                        total = finder(res, find_total)
+                        if idx > int(total) and end_flag:
+                            end_flag = False
+                    except Exception:
+                        total = 999
                 else:
                     try:
                         res = etree.HTML(res[0].decode('utf-8'))
@@ -78,8 +81,8 @@ class HTTPListRequest(object):
             idx += params*mutil
 
             # Here is a debugger.
-            if idx > 0:
-                break
+            # if idx > 0:
+            #     break
 
 class HTTPDetailRequest(object):
 

@@ -5,11 +5,7 @@ from module.request.http import HTTPListRequest, HTTPDetailRequest
 from module.parser.detail import ParserDetail
 from module.parser.list import ParserList
 
-from util.common.tools import finder
 from util.redis import RedisController
-from util.web.proxies import ProxiesRequests
-from constant.config import REQUEST_CFG
-
 
 class Do(object):
 

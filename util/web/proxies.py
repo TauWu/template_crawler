@@ -85,7 +85,7 @@ class ProxiesRequests(ProxiesHeaders):
                 self._single_content = b"{}"
                 print("BAD REQUEST")
                 break
-            print("*******", url, args)
+
             try:
             # URL 请求发送
                 if self._method == 'GET':
@@ -94,6 +94,9 @@ class ProxiesRequests(ProxiesHeaders):
                     req = requests.post(url, headers=self._headers, proxies=self._proxy, allow_redirects=False, timeout=2, verify=False, data=args[0])#
                 req_content = req.content
 
+                with open('test.html', 'w') as f:
+                    f.write(req_content.decode('utf-8'))
+                
                 if str(req_content).find("The number of requests exceeds the limit") != -1 or str(req_content).find("Concurrent number exceeds limit") != -1 or str(req_content) == "b''":
                     # 端口转发太频繁 重新发起请求
                     # 针对安居客 返回数据为空 重新发起请求
@@ -111,6 +114,7 @@ class ProxiesRequests(ProxiesHeaders):
 
             except Exception as e:
                 # req_warn("请求失败！正在重新发起... %s"%str(e))
+                print('Request Err {}'.format(e))
                 time.sleep(0.5)
                 continue
 

@@ -28,10 +28,7 @@ class ParserDetail(object):
                     try:
                         rtn_data[k] = xml_data.xpath(v)[0].xpath('./text()')[0].strip()
                     except Exception as e:
-                        with open("test{}.html".format(idxx), "w") as web:
-                            web.write(str(res))
-
-                        print("Err: {} xml_data:{}".format(e, res))
+                        print("Err: {} xml_data:{}".format(e, res.decode('utf-8')))
                 self.rds.__update_dict_to_redis__(".".join(idxx), rtn_data)
                 
             else:

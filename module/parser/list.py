@@ -22,12 +22,15 @@ class ParserList(object):
             parser.pop('data_path')
 
             for result in self.list_res_iter:
-                data_list = finder(result, find_data)
-                for data in data_list:
-                    rtn_data = dict()
-                    for k, v in zip(parser.keys(), parser.values()):
-                        rtn_data[k] = data[v]
-                    self.__update_redis__(rtn_data)
+                try:
+                    data_list = finder(result, find_data)
+                    for data in data_list:
+                        rtn_data = dict()
+                        for k, v in zip(parser.keys(), parser.values()):
+                            rtn_data[k] = data[v]
+                        self.__update_redis__(rtn_data)
+                except Exception:
+                    pass
         else:
             for data in self.list_res_iter:
                 rtn_data = dict()
@@ -43,7 +46,7 @@ class ParserList(object):
     
     def __update_redis__(self, rtn_data):
         if len(self.rds_key.split('.')) > 1:
-            self.rds.__update_dict_to_redis__(".".join([rtn_data[k] for k in self.rds_key.split('.')]), rtn_data)
+            self.rds.__update_dict_to_redis__(".".join([str(rtn_data[k]) for k in self.rds_key.split('.')]), rtn_data)
         else:
             self.rds.__update_dict_to_redis__(rtn_data[self.rds_key], rtn_data)
 
