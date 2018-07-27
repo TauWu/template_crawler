@@ -1,6 +1,6 @@
 # Parser Detail
 # Parse detail page
-import json
+import json, re
 from lxml import etree
 from util.common.tools import finder
 
@@ -10,6 +10,7 @@ class ParserDetail(object):
         self.detail_res_iter = detail_res_iter
         self.crawler_conf    = crawler_conf
         self.rds             = rds
+        self.compiles        = crawler_conf['compiles']
 
     @property
     def save(self):
@@ -23,12 +24,18 @@ class ParserDetail(object):
             
             rtn_data = dict()
             if int(crawler['method']) == 2:
+                with open("test1.html", "w") as f:
+                    f.write(res.decode('utf-8'))
                 xml_data = etree.HTML(res)
                 for k, v in zip(parser.keys(), parser.values()):
                     try:
-                        rtn_data[k] = xml_data.xpath(v)[0].xpath('./text()')[0].strip()
+                        if k in self.compiles.keys():
+                            # print("*****", etree.tostring(xml_data.xpath(v)[0]).decode('utf-8'))
+                            rtn_data[k] = re.findall(self.compiles[k], etree.tostring(xml_data.xpath(v)[0]).decode('utf-8'))[0]
+                        else:
+                            rtn_data[k] = xml_data.xpath(v)[0].xpath('./text()')[0].strip()
                     except Exception as e:
-                        print("Err: {} xml_data:{}".format(e, res.decode('utf-8')))
+                        print("Err: {}".format(e))
                 self.rds.__update_dict_to_redis__(".".join(idxx), rtn_data)
                 
             else:

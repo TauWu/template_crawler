@@ -10,7 +10,7 @@ from util.redis import RedisController
 class Do(object):
 
     @staticmethod
-    def test(self):
+    def test():
         '''test
         Request IP test URL to ensure the proxies is enabled.
         '''
@@ -39,13 +39,15 @@ class Do(object):
         '''do
         Start Process from here.
         '''
-        print("Process 1")
+        print("Process 1 Start")
         self.list_res_iter      = self.__req_list__
         self.__parser_list__
-        print("Process 2")
+
+        print("Process 2 Start")
         self.detail_res_iter    = self.__req_detail__
         self.__parser_detail__
-        print("Process 3")
+        
+        print("Process End.")
 
     @property
     def __load__(self):
@@ -55,7 +57,7 @@ class Do(object):
         self.crawler_conf = CrawlerConfigReader.crawler_config(self.crawler_name)
         self.rds          = RedisController(int(self.crawler_conf['sys_conf']['redis_db']))
         self.rds_key      = self.crawler_conf['sys_conf']['redis_key']
-        # Here is a log about read crawler config info succeed.
+        print("Here is crawler config ...", self.crawler_conf)
 
     @property
     def __req_list__(self):
