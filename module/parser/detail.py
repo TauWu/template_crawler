@@ -35,8 +35,11 @@ class ParserDetail(object):
                 find_data = parser["data_path"].split('.')            
                 parser.pop('data_path')        
                 res = json.loads(res.decode('utf-8'))
-                data = finder(res, find_data)
-                for k, v in zip(parser.keys(), parser.values()):
-                    rtn_data[k] = data[v]
-                self.rds.__update_dict_to_redis__('.'.join(idxx), rtn_data)
-                parser['data_path'] = '.'.join(find_data)
+                try:
+                    data = finder(res, find_data)
+                    for k, v in zip(parser.keys(), parser.values()):
+                        rtn_data[k] = data[v]
+                    self.rds.__update_dict_to_redis__('.'.join(idxx), rtn_data)
+                    parser['data_path'] = '.'.join(find_data)
+                except Exception:
+                    pass
