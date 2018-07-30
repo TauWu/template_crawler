@@ -40,11 +40,13 @@ class ParserList(object):
                 rtn_datas = list()
 
                 print("111111111111")
+                with open("test.html", "w") as f:
+                    f.write(etree.tostring(result).decode('utf-8'))
                 
-                # for k, v in zip(parser.keys(), parser.values()):
-
                 for k, v in parser.items():
                     rtn_data_list   = list()
+
+                    print("****", k, v)
    
                     for data in result.xpath(v):
                         rtn_data = dict()

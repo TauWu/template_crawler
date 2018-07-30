@@ -22,10 +22,11 @@ class HTTPListRequest(object):
         crawler     = self.crawler
         method      = int(crawler['method'])
         compiles    = self.compiles
-        find_total  = crawler["total"].split('.')
 
         if 'childpath' in crawler.keys():
             childpath = crawler['childpath'].split(',')
+        else:
+            childpath = ['']
 
         if method == 2:
             for cpath in childpath:
@@ -45,7 +46,6 @@ class HTTPListRequest(object):
                         try:    
                             res = etree.HTML(res[0].decode('utf-8'))
                             if 'total' in compiles:
-                                print("*******",res.xpath(crawler['total']))
                                 total = re.findall(compiles['total'], etree.tostring(res.xpath(crawler['total'])[0].decode('utf-8')))[0]
                             else:
                                 total = res.xpath(crawler['total'])[0].xpath('./text()')[0]
@@ -60,7 +60,7 @@ class HTTPListRequest(object):
                     if cursor > int(total):                   
                         break
 
-                    break   # debug code
+                    # break   # debug code
 
                     
         else:
@@ -88,37 +88,7 @@ class HTTPListRequest(object):
                     
                     if cursor > int(total):                   
                         break
-                    
-                    # break   # debug code
-            
-            # for res in res_list:
-            #     if method == 1 or method == 3:
-            #         res = json.loads(res[0].decode('utf-8'))
-            #         try:
-            #             total = finder(res, find_total)
-            #             print("totaldebug:{}".format(total))
-            #             if idx > int(total) and end_flag:
-            #                 end_flag = False
-            #         except Exception:
-            #             total = 999
-            #     else:
-            #         try:
-            #             res = etree.HTML(res[0].decode('utf-8'))
-            #             total = res.xpath(crawler['total'])[0].xpath('./text()')[0]
-            #             print("totaldebug:{}".format(total))
-            #         except Exception as e:
-            #             total = 999
-            #             print('ERR: total {}'.format(e))
-            #         if idx > int(total) and end_flag:                        
-            #             end_flag = False
-            #     yield res
-                                
-            # idx += params*mutil
-            # print("idxde bug {}".format(idx))
 
-            # Here is a debugger.
-            # if idx > 0:
-                # break
 
     @staticmethod
     def __mutil_req__(method, mutil, crawler, **kwargs):
