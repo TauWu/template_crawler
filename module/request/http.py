@@ -89,7 +89,7 @@ class HTTPListRequest(object):
                     if cursor > int(total):                   
                         break
                     
-                    break   # debug code
+                    # break   # debug code
             
             # for res in res_list:
             #     if method == 1 or method == 3:

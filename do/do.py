@@ -40,8 +40,8 @@ class Do(object):
         Start Process from here.
         '''
         print("Process 1 Start")
-        self.list_res_iter      = self.__req_list__
-        self.__parser_list__
+        # self.list_res_iter      = self.__req_list__
+        # self.__parser_list__
 
         print("Process 2 Start")
         self.detail_res_iter    = self.__req_detail__
