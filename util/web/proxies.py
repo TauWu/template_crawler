@@ -48,19 +48,29 @@ class ProxiesRequests(ProxiesHeaders):
     '''
     def __init__(self, urls=[], **kwargs):
         ProxiesHeaders.__init__(self)
-        self._urls = urls
-        self._method = 'GET'
+        self._urls          = urls
+        self._method        = 'GET'
+        self._need_cookies  = False
+
         if "data_list" in kwargs.keys():
-            self._datas = kwargs['data_list']
-            self._method = 'POST'
-        self.__auth_with_time = self.auth_with_time
-        self.__proxy_auth = self.__auth_with_time[0]
-        self.__timestamp = self.__auth_with_time[1]
-        self._proxy = {"http": "http://%s"%self._conf["ip_port"], "https": "https://%s"%self._conf["ip_port"]}
-        self._headers = {"Proxy-Authorization": self.__proxy_auth}
-        self._single_content = None
-        self._content = list()
-        self._content_dict = dict()
+            self._datas     = kwargs['data_list']
+            self._method    = 'POST'
+        if "need_cookies" in kwargs.keys():
+            self._need_cookies = True
+            self._resp_cookies = None
+
+        self.__auth_with_time   = self.auth_with_time
+        self.__proxy_auth       = self.__auth_with_time[0]
+        self.__timestamp        = self.__auth_with_time[1]
+        self._proxy             = {
+            "http"  : "http://%s"%self._conf["ip_port"],
+            "https" : "https://%s"%self._conf["ip_port"]
+        }
+        self._headers           = {"Proxy-Authorization": self.__proxy_auth}
+        self._cookies           = None
+        self._single_content    = None
+        self._content           = list()
+        self._content_dict      = dict()
 
     @property
     def _get_headers_(self):
@@ -91,13 +101,9 @@ class ProxiesRequests(ProxiesHeaders):
             try:
             # URL 请求发送
                 if self._method == 'GET':
-                    print("****1", url)
-                    req = requests.get(url, headers=self._headers, proxies=self._proxy, allow_redirects=False, timeout=20, verify=False)
-                    # req = requests.get(url, headers=self._headers, proxies=self._proxy, timeout=20, verify=False)
-                    # print("*******1", req)
+                    req = requests.get(url, headers=self._headers, cookies=self._cookies, proxies=self._proxy, allow_redirects=False, timeout=20, verify=False)
                 else:
-                    print("****2")
-                    req = requests.post(url, headers=self._headers, proxies=self._proxy, allow_redirects=False, timeout=2, verify=False, data=args[0])#
+                    req = requests.post(url, headers=self._headers, cookies=self._cookies, proxies=self._proxy, allow_redirects=False, timeout=2, verify=False, data=args[0])#
                 req_content = req.content
 
                 # print("&&&&", req_content)
@@ -115,6 +121,7 @@ class ProxiesRequests(ProxiesHeaders):
                     continue
                     
                 self._single_content = req_content
+                self._resp_cookies   = req.cookies
                 break
 
             except Exception as e:
@@ -142,7 +149,10 @@ class ProxiesRequests(ProxiesHeaders):
         # req_info("请求发送完成！")
         for url in self._urls:
             self._content.append((self._content_dict[url], url))
-        return self._content
+        if self._need_cookies:
+            return self._content, self._resp_cookies
+        else:
+            return self._content
 
     def add_headers(self, headers):
         '''特殊的网页请求可以添加Headers'''
@@ -152,6 +162,9 @@ class ProxiesRequests(ProxiesHeaders):
         '''特殊网页请求可以添加Cookies'''
         headers_tmp = {"Cookies":cookies}
         self.add_headers(headers_tmp)
+
+    def add_cookies_dict(self, cookies):
+        self._cookies = cookies
 
 class ProxiesVaild(ProxiesRequests):
     '''测试代理代码'''

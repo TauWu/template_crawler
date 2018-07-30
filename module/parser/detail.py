@@ -17,12 +17,20 @@ class ParserDetail(object):
         '''save
         Save parsed data into redis.
         '''
-        
-        for res, task, idxx in self.detail_res_iter:
-            crawler = self.crawler_conf['detail_crawlers'][task-1]
-            parser = self.crawler_conf['detail_parsers'][task-1]
+
+        for res, rds_kv, idx in self.detail_res_iter:
+
+            print(self.crawler_conf["detail_crawlers"], idx)
+
+            crawler     = self.crawler_conf['detail_crawlers'][idx]
+            parser      = self.crawler_conf['detail_parsers'][idx]
             
             rtn_data = dict()
+
+            # print(res, rds_kv)
+            print(crawler, idx)
+            # a = input("DEBUG")
+            
             if int(crawler['method']) == 2:
                 with open("test1.html", "w") as f:
                     f.write(res.decode('utf-8'))
@@ -36,7 +44,7 @@ class ParserDetail(object):
                             rtn_data[k] = xml_data.xpath(v)[0].xpath('./text()')[0].strip()
                     except Exception as e:
                         print("Err: {}".format(e))
-                self.rds.__update_dict_to_redis__(".".join(idxx), rtn_data)
+                self.rds.__update_dict_to_redis__(".".join(rds_kv.values()), rtn_data)
                 
             else:
                 print("****", parser)
@@ -47,7 +55,7 @@ class ParserDetail(object):
                     data = finder(res, find_data)
                     for k, v in zip(parser.keys(), parser.values()):
                         rtn_data[k] = data[v]
-                    self.rds.__update_dict_to_redis__('.'.join(idxx), rtn_data)
+                    self.rds.__update_dict_to_redis__(".".join(rds_kv.values()), rtn_data)
                 except Exception as e:
                     print("??????{} {}".format(e, res))
                 finally:

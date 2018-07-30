@@ -46,7 +46,7 @@ class Do(object):
         print("Process 2 Start")
         self.detail_res_iter    = self.__req_detail__
         self.__parser_detail__
-        
+
         print("Process End.")
 
     @property
@@ -77,7 +77,7 @@ class Do(object):
         # You are supposed to create a child process to do this.
 
         req = HTTPDetailRequest(self.rds, self.crawler_conf)
-        yield from req.detail_res_iter
+        yield from req.detail_res_cookie_iter
 
     @property
     def __parser_list__(self):
