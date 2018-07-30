@@ -20,3 +20,5 @@ def finder(result, find):
     except Exception as e:
         print("Err:{}********\n{}\n{}\n".format(e, result, find))
         raise e
+
+# def lxmlfinder()

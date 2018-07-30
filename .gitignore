@@ -6,3 +6,6 @@ sys.cfg
 
 *.html
 *.log
+
+test/
+
