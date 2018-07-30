@@ -17,6 +17,7 @@ class ParserDetail(object):
         '''save
         Save parsed data into redis.
         '''
+        from xml.sax.saxutils import unescape
 
         for res, rds_kv, idx in self.detail_res_iter:
 
@@ -28,7 +29,7 @@ class ParserDetail(object):
             rtn_data = dict()
 
             # print(res, rds_kv)
-            print(crawler, idx)
+            # print(crawler, idx)
             # a = input("DEBUG")
             
             if int(crawler['method']) == 2:
@@ -38,16 +39,14 @@ class ParserDetail(object):
                 for k, v in zip(parser.keys(), parser.values()):
                     try:
                         if k in self.compiles.keys():
-                            # print("*****", etree.tostring(xml_data.xpath(v)[0]).decode('utf-8'))
                             rtn_data[k] = re.findall(self.compiles[k], etree.tostring(xml_data.xpath(v)[0]).decode('utf-8'))[0]
                         else:
                             rtn_data[k] = xml_data.xpath(v)[0].xpath('./text()')[0].strip()
                     except Exception as e:
                         print("Err: {}".format(e))
-                self.rds.__update_dict_to_redis__(".".join(rds_kv.values()), rtn_data)
+                self.rds.__update_dict_to_redis__(".".join([rds_kv[k] for k in self.crawler_conf['sys_conf']['redis_key'].split('.')]), rtn_data)
                 
             else:
-                print("****", parser)
                 find_data = parser["data_path"].split('.')            
                 parser.pop('data_path')        
                 res = json.loads(res.decode('utf-8'))
@@ -55,8 +54,8 @@ class ParserDetail(object):
                     data = finder(res, find_data)
                     for k, v in zip(parser.keys(), parser.values()):
                         rtn_data[k] = data[v]
-                    self.rds.__update_dict_to_redis__(".".join(rds_kv.values()), rtn_data)
+                    self.rds.__update_dict_to_redis__(".".join([rds_kv[k] for k in self.crawler_conf['sys_conf']['redis_key'].split('.')]), rtn_data)
                 except Exception as e:
-                    print("??????{} {}".format(e, res))
+                    print("Parse Detail Error! Err:{} Result:{}".format(e, res))
                 finally:
                     parser['data_path'] = '.'.join(find_data)
