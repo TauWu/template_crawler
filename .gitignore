@@ -9,3 +9,5 @@ sys.cfg
 
 test/
 
+*.xlsx
+nohup.out

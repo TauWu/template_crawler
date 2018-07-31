@@ -57,7 +57,7 @@ class HTTPListRequest(object):
                         finally:                    
                             yield res
 
-                    if cursor > int(total):                   
+                    if cursor > int(total):
                         break
 
                     # break   # debug code
@@ -96,28 +96,22 @@ class HTTPListRequest(object):
         req with different config.
         '''
         if 'cpath' in kwargs:
-            cpath       = kwargs['cpath']
+            cpath      = kwargs['cpath']
 
         if 'params' in crawler.keys():
-            params      = int(crawler['params'])
+            params     = int(crawler['params'])
 
         if 'list_url' in crawler.keys():
-            url_tpl     = crawler['list_url']
-
-        # if 'childpath' in crawler.keys():
-        #     childpath   = crawler['childpath'].split('.')
+            url_tpl    = crawler['list_url']
 
         if 'pageshow' in crawler.keys():
             pageshow   = int(crawler['pageshow'])
 
         if 'data' in crawler.keys():
-            data = json.loads(crawler['data'])
+            data       = json.loads(crawler['data'])
 
         if 'data_key' in crawler.keys():
-            data_key = json.loads(crawler['data_key'])
-
-        # if 'total'     in crawler.keys():
-        #     totaler     = crawler['total']
+            data_key   = json.loads(crawler['data_key'])
 
         if method == 1:
             yield from HTTPListRequest.__req_get_api__(mutil, url_tpl, params)

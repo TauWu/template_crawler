@@ -18,3 +18,4 @@ if __name__ == "__main__":
     elif len(argv) == 2: crawler_name = argv[1]
     
     crawler = Do(crawler_name)
+    crawler.rds_to_xlsx("{}.xlsx".format(crawler_name), crawler_name)

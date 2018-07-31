@@ -4,6 +4,7 @@ from module.request.test import HTTPProxiesTest
 from module.request.http import HTTPListRequest, HTTPDetailRequest
 from module.parser.detail import ParserDetail
 from module.parser.list import ParserList
+from module.output.rds_to_xlsx import RdsToXlsx
 
 from util.redis import RedisController
 
@@ -33,7 +34,7 @@ class Do(object):
         # init
         self.__load__
 
-        self.do()       # debug code
+        # self.do()       # debug code
 
     def do(self):
         '''do
@@ -94,3 +95,6 @@ class Do(object):
         '''
         parser = ParserDetail(self.detail_res_iter, self.crawler_conf, self.rds)
         parser.save
+
+    def rds_to_xlsx(self, file_name, sheet_name):
+        RdsToXlsx.save(self.rds, file_name, sheet_name)
