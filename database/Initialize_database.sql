@@ -239,8 +239,8 @@ INNER JOIN `v_ziroom_house_info` AS `v_zr`
   ON `v_zr`.`house_id` = `r_zr`.`house_id`;
 
 -- QK House Info view.
-DROP VIEW IF EXISTS `v_qk_recomm_info`;
-CREATE VIEW `v_qk_recomm_info` AS
+DROP VIEW IF EXISTS `v_qk_house_info`;
+CREATE VIEW `v_qk_house_info` AS
 SELECT 
     `qk`.`house_info_id`,`qk`.`house_id`,`qk`.`community_id`,`qk`.`orientation`,
     `qk`.`floor`,`qk`.`area`,`qk`.`origin_price`,`qk`.`price`,`qk`.`enabled`,

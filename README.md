@@ -25,15 +25,19 @@ Template Crawler | [@TauWu](https://github.com/TauWu/) | 2018-07-19 | Linux (Bas
 	- [x] Test House Info from [qk365](http://www.qk365.com)
 	- [x] Test House Info from [lianjia](https://sh.lianjia.com)
 
-- [ ] Full Test
-	- [ ] Test Full House Info from [ZiRoom](http://sh.ziroom.com)
-	- [ ] Test Full House Info from [qk365](http://www.qk365.com)
-	- [ ] Test Full House Info from [lianjia](https://sh.lianjia.com)
+- [x] Full Test
+	- [x] Test Full House Info from [ZiRoom](http://sh.ziroom.com)
+	- [x] Test Full House Info from [qk365](http://www.qk365.com)
+	- [x] Test Full House Info from [lianjia](https://sh.lianjia.com)
+
+- [ ] ETL Project
+	- [ ] Extract Data from Redis
+	- [ ] Transform and clean data
+	- [ ] Load Data and save
 
 ## Future TODOs
 
 - [ ] Data Warehouse
-- [ ] ETL Project
 - [ ] Data Mining
 - [ ] Data API
 - [ ] Price Trend Prediction
