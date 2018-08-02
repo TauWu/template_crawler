@@ -34,8 +34,6 @@ class Do(object):
         # init
         self.__load__
 
-        # self.do()       # debug code
-
     def do(self):
         '''do
         Start Process from here.
@@ -97,4 +95,7 @@ class Do(object):
         parser.save
 
     def rds_to_xlsx(self, file_name, sheet_name):
+        '''rds_to_xlsx
+        Data from redis database to xlsx file.
+        '''
         RdsToXlsx.save(self.rds, file_name, sheet_name)

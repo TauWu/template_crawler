@@ -204,12 +204,12 @@ INNER JOIN `community_info` AS `c`
 DROP VIEW IF EXISTS `v_ziroom_house_info`;
 CREATE VIEW `v_ziroom_house_info` AS
 SELECT 
-    `zr`.`house_id`, `zr`.`price`,`zr`.`floor`, `zr`.`house_type`, 
-    `zr`.`community_id`,`zr`.`enabled`, `zr`.`create_time`, 
-    `zr`.`modify_time`, `c`.`community_name`,
-    `c`.`lat`,`c`.`lng`, `c`.`cw_district`,`c`.`cw_busi`,
-    `c`.`cw_detail`, `c`.`bd_province`,`c`.`bd_city`,`c`.`bd_district`,
-    `c`.`bd_busi`,`c`.`bd_street`,`c`.`bd_detail`,`c`.`bd_adcode`
+  `zr`.`house_id`, `zr`.`price`,`zr`.`floor`, `zr`.`house_type`, 
+  `zr`.`community_id`,`zr`.`enabled`, `zr`.`create_time`, 
+  `zr`.`modify_time`, `c`.`community_name`,
+  `c`.`lat`,`c`.`lng`, `c`.`cw_district`,`c`.`cw_busi`,
+  `c`.`cw_detail`, `c`.`bd_province`,`c`.`bd_city`,`c`.`bd_district`,
+  `c`.`bd_busi`,`c`.`bd_street`,`c`.`bd_detail`,`c`.`bd_adcode`
 FROM `house_base_infozr` AS `zr`
 INNER JOIN `community_info` AS `c`
   ON `c`.`source_from` = 2 AND `c`.`community_id` = `zr`.`community_id`
@@ -219,9 +219,9 @@ INNER JOIN `community_info` AS `c`
 DROP VIEW IF EXISTS `v_ziroom_payment_info`;
 CREATE VIEW `v_ziroom_payment_info` AS
 SELECT 
-    `p_zr`.`period`, `p_zr`.`rent_fee`, `p_zr`.`deposit_fee`, 
-    `p_zr`.`service_fee`,
-    `v_zr`.*
+  `p_zr`.`period`, `p_zr`.`rent_fee`, `p_zr`.`deposit_fee`, 
+  `p_zr`.`service_fee`,
+  `v_zr`.*
 FROM `house_price_infozr` AS `p_zr`
 INNER JOIN `v_ziroom_house_info` AS `v_zr`
   ON `v_zr`.`house_id` = `p_zr`.`house_id`;
@@ -231,9 +231,9 @@ INNER JOIN `v_ziroom_house_info` AS `v_zr`
 DROP VIEW IF EXISTS `v_ziroom_recomm_info`;
 CREATE VIEW `v_ziroom_recomm_info` AS
 SELECT 
-    `r_zr`.`url`,`r_zr`.`index_no`,`r_zr`.`price` as `recomm_price`,
-    `r_zr`.`price_unit`,`r_zr`.`info`,`r_zr`.`photo`,
-    `v_zr`.*
+  `r_zr`.`url`,`r_zr`.`index_no`,`r_zr`.`price` as `recomm_price`,
+  `r_zr`.`price_unit`,`r_zr`.`info`,`r_zr`.`photo`,
+  `v_zr`.*
 FROM `house_recomm_infozr` AS `r_zr`
 INNER JOIN `v_ziroom_house_info` AS `v_zr`
   ON `v_zr`.`house_id` = `r_zr`.`house_id`;
@@ -242,13 +242,13 @@ INNER JOIN `v_ziroom_house_info` AS `v_zr`
 DROP VIEW IF EXISTS `v_qk_house_info`;
 CREATE VIEW `v_qk_house_info` AS
 SELECT 
-    `qk`.`house_info_id`,`qk`.`house_id`,`qk`.`community_id`,`qk`.`orientation`,
-    `qk`.`floor`,`qk`.`area`,`qk`.`origin_price`,`qk`.`price`,`qk`.`enabled`,
-    `qk`.`create_time`, `qk`.`modify_time`,
-	`c`.`community_name`, `c`.`lat`,`c`.`lng`,
-	`c`.`cw_district`,`c`.`cw_busi`,`c`.`cw_detail`, `c`.`bd_province`,
-	`c`.`bd_city`,`c`.`bd_district`,`c`.`bd_busi`,`c`.`bd_street`,
-	`c`.`bd_detail`,`c`.`bd_adcode`
+  `qk`.`house_info_id`,`qk`.`house_id`,`qk`.`community_id`,`qk`.`orientation`,
+  `qk`.`floor`,`qk`.`area`,`qk`.`origin_price`,`qk`.`price`,`qk`.`enabled`,
+  `qk`.`create_time`, `qk`.`modify_time`,
+  `c`.`community_name`, `c`.`lat`,`c`.`lng`,
+  `c`.`cw_district`,`c`.`cw_busi`,`c`.`cw_detail`, `c`.`bd_province`,
+  `c`.`bd_city`,`c`.`bd_district`,`c`.`bd_busi`,`c`.`bd_street`,
+  `c`.`bd_detail`,`c`.`bd_adcode`
 FROM `house_base_infoqk` AS `qk`
 INNER JOIN `community_info` AS `c` 
   ON `c`.`source_from` = 3 AND `c`.`community_id` = `qk`.`community_id`
