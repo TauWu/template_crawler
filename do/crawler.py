@@ -39,8 +39,8 @@ class Do(object):
         Start Process from here.
         '''
         print("Process 1 Start")
-        self.list_res_iter      = self.__req_list__
-        self.__parser_list__
+        # self.list_res_iter      = self.__req_list__
+        # self.__parser_list__
 
         print("Process 2 Start")
         self.detail_res_iter    = self.__req_detail__
@@ -91,7 +91,7 @@ class Do(object):
         '''__parser_detail__
         Parse the data from req of detail websites/APIs
         '''
-        parser = ParserDetail(self.detail_res_iter, self.crawler_conf, self.rds)
+        parser = ParserDetail(self.crawler_name, self.detail_res_iter, self.crawler_conf, self.rds)
         parser.save
 
     def rds_to_xlsx(self, file_name, sheet_name):

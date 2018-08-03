@@ -6,7 +6,7 @@
 # Author : Tau Woo
 # Date   : 2018-07-19
 
-from do.do import Do
+from do.crawler import Do
 from sys import argv
 
 if __name__ == "__main__":

@@ -97,37 +97,73 @@ class Do(object):
             yield data_dict
 
     def __l__lianjia__(self, t_data):
+
         for data in t_data:
             print(data, "\n")
 
 ##################################################
 
     def etl_ziroom(self):
-        pass
+        e_data = self.__e_ziroom__()
+        t_data = self.__t__ziroom__(e_data)
+        _      = self.__l__ziroom__(t_data)
 
     def __e_ziroom__(self):
-        pass
+        for data in self.rds_data_iter:
+            data = data[1]
+            yield json.loads(data)
 
-    def __t__ziroom__(self):
-        pass
+    def __t__ziroom__(self, e_data):
+        # Load data from redis to transformer.
+        t_dict = dict(
+            house_id        = "house_id",
+            community_id    = "comm_id",
+            # community_name  = "comm_name",
+            lat             = "lat",
+            lng             = "lat",
+            # cw_district     = "district",
+            cw_busi         = "busiarea",
+            house_type      = "house_type",
+            # orientation     = "orientation",
+            price           = "price",
+            floor           = "floor",
+            area            = "area"
+        )
 
-    def __l__ziroom__(self):
-        pass
+        # Clean data by lamdba functions.
+        t_clean_dict = dict (
+            price     = lambda p, data: int(clean_price(p, data)),
+            floor     = lambda f, data: ",".join(re.findall("(.+)楼层 \(共([0-9]+)层\)", f)[0]),
+            area      = lambda a, data: int(re.findall("([0-9]+)", a)[0])
+        )
+
+        for data in e_data:
+            data_dict = dict()
+
+            for t in t_dict.items():
+                try:
+                    data_dict[t[0]] = data[t[1]]
+                except Exception:
+                    data_dict[t[0]] = None
+
+            yield data_dict
+
+    def __l__ziroom__(self, t_data):
+        for data in t_data:
+            print(data)
+            a = input("DEBUG")
 
 ##################################################
 
     def etl_qk(self):
         pass
 
-    @property
     def __e_qk__(self):
         pass
 
-    @property
     def __t__qk__(self):
         pass
 
-    @property
     def __l__qk__(self):
         pass
 
@@ -135,12 +171,9 @@ class Do(object):
 
     def __bd_map__(self, community_id, lat, lng):
         from requests import get
-
-        def get_k_tree(data, k):
-            k = k.split('.')
-            for key in k:
-                data = data[key]
-            return data
+        
+        if lat is None or lng is None:
+            return dict()
         
         try:
             return self.community_dict[community_id]
@@ -167,3 +200,9 @@ class Do(object):
             
             self.community_dict[community_id] = bd_data_dict
             return bd_data_dict
+
+        def get_k_tree(data, k):
+            k = k.split('.')
+            for key in k:
+                data = data[key]
+            return data
