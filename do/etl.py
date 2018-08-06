@@ -2,6 +2,7 @@
 # ETL project main function
 from module.config.etl import ETLConfigReader
 from module.redis.scan import RedisScanner
+from module.database.db_opter import DBOpter
 from constant.config import BD_MAP_CFG
 
 import json
@@ -10,20 +11,38 @@ import re
 class Do(object):
 
     def __init__(self, etl_name):
-        self.etl_name       = etl_name
-        self.etl_conf       = ETLConfigReader.etl_config(etl_name)
-        self.rds_data_iter  = RedisScanner.rds_data_iter(self.etl_conf["sys_conf"]["redis_db"])
-        self.community_dict = dict()
+        self.etl_name           = etl_name
+        self.etl_conf           = ETLConfigReader.etl_config(etl_name)
+        self.rds_data_iter      = RedisScanner.rds_data_iter(self.etl_conf["sys_conf"]["redis_db"])
+        self.community_tbname   = "community_info"
+        self.community_tbkeys   = [
+            'community_id', 'source_from', 'source_name', 'community_name',
+            'lat', 'lng', 'cw_district', 'cw_busi', 'cw_detail', 'bd_province',
+            'bd_city', 'bd_district', 'bd_busi', 'bd_street', 'bd_detail', 'bd_adcode'
+        ]
+        self.community_dict     = dict()
+        self.db                 = DBOpter()
 
     def do(self):
         print(self.etl_conf)
 
         if self.etl_name == "lianjia":
+            self.base_tbname = "house_base_infolj"
+            self.base_tbkeys = []
             self.etl_lianjia()
+
         elif self.etl_name == "ziroom":
             self.community_id_list = list()
+            self.base_tbname = "house_base_infozr"
+            self.base_tbkeys = []
             self.etl_ziroom()
+        
         elif self.etl_name == "qk":
+            self.base_tbname = "house_base_infoqk"
+            self.base_tbkeys = [
+                'house_id', 'community_id', 'orientation', 'floor', 'area',
+                'origin_price', 'price'
+            ]
             self.etl_qk()
 
     @property
@@ -64,7 +83,7 @@ class Do(object):
             data_dict["community_id"], data_dict["lat"], data_dict["lng"]
             ), **data_dict
         )
-
+        
 ######################### ETL LIANJIA #########################
 
     def etl_lianjia(self):
@@ -230,6 +249,7 @@ class Do(object):
             lng             = "longitude",
             cw_district     = "district",
             cw_busi         = "busi_name",
+            cw_detail       = "",
             house_type      = "",
             orientation     = "orientation",
             price           = "price",
@@ -242,6 +262,7 @@ class Do(object):
             floor           = lambda f, data: ",".join(re.findall(r"楼层：(.+)", f)[0].split('/')),
             area            = lambda a, data: int(re.findall("([0-9.]+)", a)[0]),
             orientation     = lambda o, data: re.findall(r"朝向：朝(.+)", o)[0],
+            origin_price    = lambda p, data: re.findall(r"租金：([0-9.]+)元/月", p)[0],
             cw_busi         = lambda b, data: html_to_str(b),
             community_name  = lambda c, data: html_to_str(c)
         )
@@ -260,8 +281,12 @@ class Do(object):
     def __l_qk__(self, t_data):
 
         for data in t_data:
-            print(data)
-            a = input("DEBUG")
+            
+            self.db.update_data(self.community_tbname, data, self.community_tbkeys, community_id=data['community_id'])
+            self.db.update_data(self.base_tbname, data, self.base_tbkeys, house_id=data['house_id'])
+
+            # a = input("DEBUG")
+
 
 ######################### BAIDU MAP #########################
 

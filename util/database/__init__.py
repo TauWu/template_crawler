@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from constant.logger import *
-from util.config import ConfigReader
+from constant.config import MYSQL_CFG
 
 class DBController():
     """
@@ -15,21 +14,22 @@ class DBController():
 
     """
 
-    def __init__(self, section_name="database"):
+    def __init__(self):
         import pymysql
         from pymysql.err import IntegrityError
 
-        (host, port, user, passwd, db) = ConfigReader.read_section_keylist(section_name,[
-            "host", "port", "user", "passwd", "db"])
-
         # 保护连接为私有成员
         try:
-            self._conn = pymysql.connect(host=host, port=int(port), user=user, passwd=passwd, db=db, charset='utf8')
+            self._conn = pymysql.connect(
+                host=MYSQL_CFG["host"], port=int(MYSQL_CFG["port"]), 
+                user=MYSQL_CFG["user"], passwd=MYSQL_CFG["passwd"],
+                db=MYSQL_CFG["db"], charset='utf8'
+            )
         except Exception:
-            db_fatal("数据库连接创建失败！[%s:%s@%s:%s?charset=%s/%s]"%(user, passwd, host, port, "utf-8", db))
-        self.cur = self._conn.cursor()
+            print("数据库连接创建失败！[{user}:{passwd}@{host}:{port}?charset=utf-8/{db}]".format_map(MYSQL_CFG))
+        self.cur = self._conn.cursor(cursor=pymysql.cursors.DictCursor)
         self.IntegrityError = IntegrityError
-        db_info("数据库连接创建成功！[%s:%s@%s:%s?charset=%s/%s]"%(user, passwd, host, port, "utf-8", db))
+        print("数据库连接创建成功！[{user}:{passwd}@{host}:{port}?charset=utf-8/{db}]".format_map(MYSQL_CFG))
 
     def execute(self, SQL):
         # 执行一条SQL语句
@@ -41,4 +41,4 @@ class DBController():
         # 关闭数据库连接
         self._conn.close()
         self.cur.close()
-        db_info("数据库连接断开成功！")
+        print("数据库连接断开成功！")
