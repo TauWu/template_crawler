@@ -21,11 +21,12 @@ class Do(object):
         if self.etl_name == "lianjia":
             self.etl_lianjia()
         elif self.etl_name == "ziroom":
+            self.community_id_list = list()
             self.etl_ziroom()
         elif self.etl_name == "qk":
             self.etl_qk()
 
-##################################################
+######################### ETL LIANJIA #########################
 
     def etl_lianjia(self):
         e_data = self.__e_lianjia__()
@@ -101,7 +102,7 @@ class Do(object):
         for data in t_data:
             print(data, "\n")
 
-##################################################
+######################### ETL ZIROOM #########################
 
     def etl_ziroom(self):
         e_data = self.__e_ziroom__()
@@ -120,21 +121,23 @@ class Do(object):
             community_id    = "comm_id",
             # community_name  = "comm_name",
             lat             = "lat",
-            lng             = "lat",
+            lng             = "lng",
             # cw_district     = "district",
             cw_busi         = "busiarea",
             house_type      = "house_type",
-            # orientation     = "orientation",
+            orientation     = "orientation",
             price           = "price",
             floor           = "floor",
-            area            = "area"
+            area            = "area",
+            paymentlist     = "paymentlist"
         )
 
         # Clean data by lamdba functions.
         t_clean_dict = dict (
-            price     = lambda p, data: int(clean_price(p, data)),
-            floor     = lambda f, data: ",".join(re.findall("(.+)楼层 \(共([0-9]+)层\)", f)[0]),
-            area      = lambda a, data: int(re.findall("([0-9]+)", a)[0])
+            floor       = lambda f, data: ",".join(re.findall(r"楼层：(.+)层", f)[0].split('/')),
+            area        = lambda a, data: int(re.findall("([0-9.]+)", a)[0]),
+            cw_busi     = lambda b, data: re.findall("(.+)公寓出租", b)[0],
+            orientation = lambda o, data: re.findall(r"朝向：(.+)", o)[0]
         )
 
         for data in e_data:
@@ -146,14 +149,33 @@ class Do(object):
                 except Exception:
                     data_dict[t[0]] = None
 
+            for t in t_clean_dict.items():
+                try:
+                    data_dict[t[0]] = t[1](data_dict[t[0]], data)
+                except Exception:
+                    pass
+
+            data_dict["source_from"] = 2
+            data_dict["source_name"] = "自如"
+
+            posi = ",".join([data_dict['lat'], data_dict['lng']])
+            if posi not in self.community_id_list:
+                self.community_id_list.append(posi)
+                
+            data_dict["community_id"] = self.community_id_list.index(posi)
+
+            data_dict = dict(self.__bd_map__(
+                data_dict["community_id"], data_dict["lat"], data_dict["lng"]
+                ), **data_dict
+            )
+
             yield data_dict
 
     def __l__ziroom__(self, t_data):
         for data in t_data:
-            print(data)
-            a = input("DEBUG")
+            print("{}\n".format(data))
 
-##################################################
+######################### ETL QINGKE #########################
 
     def etl_qk(self):
         pass
@@ -167,11 +189,18 @@ class Do(object):
     def __l__qk__(self):
         pass
 
-##################################################
+######################### BAIDU MAP #########################
+
 
     def __bd_map__(self, community_id, lat, lng):
         from requests import get
         
+        def get_k_tree(data, k):
+            k = k.split('.')
+            for key in k:
+                data = data[key]
+            return data
+
         if lat is None or lng is None:
             return dict()
         
@@ -200,9 +229,3 @@ class Do(object):
             
             self.community_dict[community_id] = bd_data_dict
             return bd_data_dict
-
-        def get_k_tree(data, k):
-            k = k.split('.')
-            for key in k:
-                data = data[key]
-            return data
