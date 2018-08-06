@@ -28,13 +28,19 @@ class Do(object):
 
         if self.etl_name == "lianjia":
             self.base_tbname = "house_base_infolj"
-            self.base_tbkeys = []
+            self.base_tbkeys = [
+                'house_id', 'community_id', 'orientation', 'house_area',
+                'house_price', 'house_floor', 'house_type_new'
+            ]
             self.etl_lianjia()
 
         elif self.etl_name == "ziroom":
             self.community_id_list = list()
             self.base_tbname = "house_base_infozr"
-            self.base_tbkeys = []
+            self.base_tbkeys = [
+                'house_id', 'community_id', 'price',
+                'house_type', 'floor'
+            ]
             self.etl_ziroom()
         
         elif self.etl_name == "qk":
@@ -144,7 +150,9 @@ class Do(object):
     def __l_lianjia__(self, t_data):
 
         for data in t_data:
-            print(data, "\n")
+            self.db.update_data(self.community_tbname, data, self.community_tbkeys, community_id=data['community_id'])
+            self.db.update_data(self.base_tbname, data, self.base_tbkeys, house_id=data['house_id'])
+
 
 ######################### ETL ZIROOM #########################
 
@@ -212,7 +220,8 @@ class Do(object):
 
     def __l_ziroom__(self, t_data):
         for data in t_data:
-            print("{}\n".format(data))
+            self.db.update_data(self.community_tbname, data, self.community_tbkeys, lat=data['lat'], lng=data['lng'])
+            self.db.update_data(self.base_tbname, data, self.base_tbkeys, house_id=data['house_id'])
 
 ######################### ETL QINGKE #########################
 
