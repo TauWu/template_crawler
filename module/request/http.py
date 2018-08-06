@@ -245,61 +245,74 @@ class HTTPDetailRequest(object):
         mutil           = int(REQUEST_CFG["mutil"])
         url_tpl_dict    = dict()
         rds_kv_list     = list()
+        flag            = True
 
-        for kx, _ in self.__show_all_in_redis__:
+        rds_data_iter = self.__show_all_in_redis__
+
+        while flag:
+
+            try:
+                kx = next(rds_data_iter)[0]
             
-            rds_idx     = kx.split('.')
-            rds_kv      = dict(zip(rds_keyx, rds_idx))
+                rds_idx     = kx.split('.')
+                rds_kv      = dict(zip(rds_keyx, rds_idx))
 
-            url_lists = {
-                str(idx):v["detail_url"].format_map(rds_kv)
-                for idx, v in enumerate(
-                    self.crawler_conf['detail_crawlers']
-                )
-            }
+                url_lists = {
+                    str(idx):v["detail_url"].format_map(rds_kv)
+                    for idx, v in enumerate(
+                        self.crawler_conf['detail_crawlers']
+                    )
+                }
 
-            rds_kv_list.append(rds_kv)
+                rds_kv_list.append(rds_kv)
+            
+            except Exception:
+                print("Iter is over.")
+                flag = False
 
-            for idx, url in url_lists.items():
-                if str(idx) not in url_tpl_dict.keys():
-                    url_tpl_dict[str(idx)] = []
+            finally:
+                
+                for idx, url in url_lists.items():
 
-                if len(url_tpl_dict[str(idx)]) >= mutil:
+                    if str(idx) not in url_tpl_dict.keys():
+                        url_tpl_dict[str(idx)] = []
 
-                    req = ProxiesRequests(url_tpl_dict['0'], need_cookies=True)
-                    if "headers" in self.sys.keys():
-                        req.add_headers(json.loads(self.sys['headers']))
+                    if len(url_tpl_dict[str(idx)]) >= mutil or flag == False:
 
-                    ctn         = req.req_content_list
-                    res_list    = ctn[0]
-                    cookies     = ctn[1]
-                    idxx        = 0
-                    q_cookies   = dict()
-
-                    for res, rds_kv in zip(res_list, rds_kv_list):
-                        yield res[0], rds_kv, idxx
-
-                    for k in url_tpl_dict.keys():
-                        if k == '0':
-                            continue
-                        idxx += 1
-                        extra_req = ProxiesRequests(url_tpl_dict[k])
-
-                        if 'cookies_key' in self.sys.keys():
-                            q_cookies[self.sys['cookies_key']] = cookies[self.sys['cookies_key']]
-                            extra_req.add_cookies_dict(
-                                q_cookies
-                            )
-
+                        req = ProxiesRequests(url_tpl_dict['0'], need_cookies=True)
                         if "headers" in self.sys.keys():
-                            extra_req.add_headers(json.loads(self.sys['headers']))
+                            req.add_headers(json.loads(self.sys['headers']))
 
-                        res_list = extra_req.req_content_list
+                        ctn         = req.req_content_list
+                        res_list    = ctn[0]
+                        cookies     = ctn[1]
+                        idxx        = 0
+                        q_cookies   = dict()
 
                         for res, rds_kv in zip(res_list, rds_kv_list):
                             yield res[0], rds_kv, idxx
+
+                        for k in url_tpl_dict.keys():
+                            if k == '0':
+                                continue
+                            idxx += 1
+                            extra_req = ProxiesRequests(url_tpl_dict[k])
+
+                            if 'cookies_key' in self.sys.keys():
+                                q_cookies[self.sys['cookies_key']] = cookies[self.sys['cookies_key']]
+                                extra_req.add_cookies_dict(
+                                    q_cookies
+                                )
+
+                            if "headers" in self.sys.keys():
+                                extra_req.add_headers(json.loads(self.sys['headers']))
+
+                            res_list = extra_req.req_content_list
+
+                            for res, rds_kv in zip(res_list, rds_kv_list):
+                                yield res[0], rds_kv, idxx
+                            
+                        url_tpl_dict    = {k:[] for k in url_tpl_dict.keys()}
+                        rds_kv_list     = list()
                         
-                    url_tpl_dict    = {k:[] for k in url_tpl_dict.keys()}
-                    rds_kv_list     = list()
-                    
-                url_tpl_dict[str(idx)].append(url)
+                    url_tpl_dict[str(idx)].append(url)
