@@ -30,15 +30,15 @@ class Do(object):
 
     def etl_lianjia(self):
         e_data = self.__e_lianjia__()
-        t_data = self.__t__lianjia__(e_data)
-        _      = self.__l__lianjia__(t_data)
+        t_data = self.__t_lianjia__(e_data)
+        _      = self.__l_lianjia__(t_data)
 
     def __e_lianjia__(self):
         for data in self.rds_data_iter:
             data = data[1]
             yield json.loads(data)
 
-    def __t__lianjia__(self, e_data):
+    def __t_lianjia__(self, e_data):
         '''__t_lianjia__
         Lianjia ETL project Transformer.
         '''
@@ -97,7 +97,7 @@ class Do(object):
 
             yield data_dict
 
-    def __l__lianjia__(self, t_data):
+    def __l_lianjia__(self, t_data):
 
         for data in t_data:
             print(data, "\n")
@@ -106,29 +106,30 @@ class Do(object):
 
     def etl_ziroom(self):
         e_data = self.__e_ziroom__()
-        t_data = self.__t__ziroom__(e_data)
-        _      = self.__l__ziroom__(t_data)
+        t_data = self.__t_ziroom__(e_data)
+        _      = self.__l_ziroom__(t_data)
 
     def __e_ziroom__(self):
         for data in self.rds_data_iter:
             data = data[1]
             yield json.loads(data)
 
-    def __t__ziroom__(self, e_data):
+    def __t_ziroom__(self, e_data):
         # Load data from redis to transformer.
         t_dict = dict(
             house_id        = "house_id",
             community_id    = "comm_id",
-            # community_name  = "comm_name",
+            community_name  = "",
             lat             = "lat",
             lng             = "lng",
-            # cw_district     = "district",
+            cw_district     = "",
             cw_busi         = "busiarea",
             house_type      = "house_type",
             orientation     = "orientation",
             price           = "price",
             floor           = "floor",
             area            = "area",
+
             paymentlist     = "paymentlist"
         )
 
@@ -171,23 +172,87 @@ class Do(object):
 
             yield data_dict
 
-    def __l__ziroom__(self, t_data):
+    def __l_ziroom__(self, t_data):
         for data in t_data:
             print("{}\n".format(data))
 
 ######################### ETL QINGKE #########################
 
     def etl_qk(self):
-        pass
+        e_data = self.__e_qk__()
+        t_data = self.__t_qk__(e_data)
+        _      = self.__l_qk__(t_data)
 
     def __e_qk__(self):
-        pass
+        for data in self.rds_data_iter:
+            data = data[1]
+            yield json.loads(data)
+            
+    def __t_qk__(self, e_data):
+        t_dict = dict(
+            house_id        = "house_id",
+            community_id    = "comm_id",
+            community_name  = "comm_name",
+            lat             = "latitude",
+            lng             = "longitude",
+            cw_district     = "district",
+            cw_busi         = "busi_name",
+            house_type      = "",
+            orientation     = "orientation",
+            price           = "price",
+            floor           = "floor",
+            area            = "area"        
+        )
 
-    def __t__qk__(self):
-        pass
+        def hex_to_str(hex_match):
+            hex_data = re.findall(r"[0-9A-Z]+", hex_match.group())[0]
+            return chr(int(hex_data, 16))
 
-    def __l__qk__(self):
-        pass
+        def html_to_str(html):
+            cpl = re.compile(r"&#x[0-9A-Z]+;")
+            html = re.sub(cpl, hex_to_str, html)
+            return html
+
+        # Clean data by lamdba functions.
+        t_clean_dict = dict (
+            floor           = lambda f, data: ",".join(re.findall(r"楼层：(.+)", f)[0].split('/')),
+            area            = lambda a, data: int(re.findall("([0-9.]+)", a)[0]),
+            orientation     = lambda o, data: re.findall(r"朝向：朝(.+)", o)[0],
+            cw_busi         = lambda b, data: html_to_str(b),
+            community_name  = lambda c, data: html_to_str(c)
+        )
+
+        for data in e_data:
+            data_dict = dict()
+
+            for t in t_dict.items():
+                try:
+                    data_dict[t[0]] = data[t[1]]
+                except Exception:
+                    data_dict[t[0]] = None
+
+            for t in t_clean_dict.items():
+                try:
+                    data_dict[t[0]] = t[1](data_dict[t[0]], data)
+                except Exception:
+                    pass
+
+            data_dict["source_from"] = 3
+            data_dict["source_name"] = "青客"
+
+            data_dict = dict(self.__bd_map__(
+                data_dict["community_id"], data_dict["lat"], data_dict["lng"]
+                ), **data_dict
+            )
+
+            yield data_dict
+
+    def __l_qk__(self, t_data):
+        from pprint import pprint
+
+        for data in t_data:
+            pprint(data)
+            a = input("DEBUG")
 
 ######################### BAIDU MAP #########################
 
@@ -209,6 +274,7 @@ class Do(object):
         except Exception:
             url_tpl = "http://api.map.baidu.com/geocoder/v2/?location={lat},{lng}&output=json&pois=1&ak={ak}"
             url = url_tpl.format(lat=lat, lng=lng, ak=BD_MAP_CFG["ak"])
+            
             bd_kv = dict(
                 bd_province = "addressComponent.province",
                 bd_city     = "addressComponent.city",
