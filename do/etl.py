@@ -26,17 +26,55 @@ class Do(object):
         elif self.etl_name == "qk":
             self.etl_qk()
 
-######################### ETL LIANJIA #########################
+    @property
+    def __e_data_iter__(self):
+        '''Extract Data iter.
+        Get data from redis one by one.
+        '''
 
-    def etl_lianjia(self):
-        e_data = self.__e_lianjia__()
-        t_data = self.__t_lianjia__(e_data)
-        _      = self.__l_lianjia__(t_data)
-
-    def __e_lianjia__(self):
         for data in self.rds_data_iter:
             data = data[1]
             yield json.loads(data)
+
+    def __transformer__(self, data, t_dict, t_clean_dict):
+        '''__transformer__
+        Transform Data by ordered methods.
+        '''
+        data_dict = dict()
+        
+        for t in t_dict.items():
+            try:
+                data_dict[t[0]] = data[t[1]]
+            except Exception:
+                data_dict[t[0]] = None
+
+        for t in t_clean_dict.items():
+            try:
+                data_dict[t[0]] = t[1](data_dict[t[0]], data)
+            except Exception:
+                pass
+
+        return data_dict
+
+    def __bd_mapper__(self, data_dict):
+        '''__bd_mapper__
+        Add Bd Map info into data_dict.
+        '''
+        return dict(self.__bd_map__(
+            data_dict["community_id"], data_dict["lat"], data_dict["lng"]
+            ), **data_dict
+        )
+
+######################### ETL LIANJIA #########################
+
+    def etl_lianjia(self):
+        '''etl_lianjia
+        ETL project for lianjia.
+        '''
+
+        e_data = self.__e_data_iter__
+        t_data = self.__t_lianjia__(e_data)
+        _      = self.__l_lianjia__(t_data)
 
     def __t_lianjia__(self, e_data):
         '''__t_lianjia__
@@ -68,32 +106,19 @@ class Do(object):
         )
 
         def clean_price(p, data):
+            '''clean_price
+            '''
             if p is not None:
                 return p
             return data["price"]
         
         for data in e_data:
-            data_dict = dict()
-
-            for t in t_dict.items():
-                try:
-                    data_dict[t[0]] = data[t[1]]
-                except Exception:
-                    data_dict[t[0]] = None
-
-            for t in t_clean_dict.items():
-                try:
-                    data_dict[t[0]] = t[1](data_dict[t[0]], data)
-                except Exception:
-                    pass
+            data_dict = self.__transformer__(data, t_dict, t_clean_dict)
             
-            data_dict = dict(self.__bd_map__(
-                data_dict["community_id"], data_dict["lat"], data_dict["lng"]
-                ), **data_dict
-            )
-
             data_dict["source_from"] = 1
             data_dict["source_name"] = "链家"
+
+            data_dict = self.__bd_mapper__(data_dict)
 
             yield data_dict
 
@@ -105,20 +130,32 @@ class Do(object):
 ######################### ETL ZIROOM #########################
 
     def etl_ziroom(self):
-        e_data = self.__e_ziroom__()
+        '''etl_ziroom
+        ETL project for ziroom.
+        '''
+
+        e_data = self.__e_data_iter__
         t_data = self.__t_ziroom__(e_data)
         _      = self.__l_ziroom__(t_data)
 
-    def __e_ziroom__(self):
-        for data in self.rds_data_iter:
-            data = data[1]
-            yield json.loads(data)
-
     def __t_ziroom__(self, e_data):
+        '''__t_ziroom__
+        Ziroom transformer.
+        '''
+
+        def get_community(data_dict):
+            '''get_community
+            Get new community id if it's not exists.
+            '''
+            posi = ",".join([data_dict['lat'], data_dict['lng']])
+            if posi not in self.community_id_list:
+                self.community_id_list.append(posi)    
+            data_dict["community_id"] = self.community_id_list.index(posi)
+
         # Load data from redis to transformer.
         t_dict = dict(
             house_id        = "house_id",
-            community_id    = "comm_id",
+            community_id    = "",
             community_name  = "",
             lat             = "lat",
             lng             = "lng",
@@ -142,33 +179,15 @@ class Do(object):
         )
 
         for data in e_data:
-            data_dict = dict()
-
-            for t in t_dict.items():
-                try:
-                    data_dict[t[0]] = data[t[1]]
-                except Exception:
-                    data_dict[t[0]] = None
-
-            for t in t_clean_dict.items():
-                try:
-                    data_dict[t[0]] = t[1](data_dict[t[0]], data)
-                except Exception:
-                    pass
+            
+            data_dict = self.__transformer__(data, t_dict, t_clean_dict)
 
             data_dict["source_from"] = 2
             data_dict["source_name"] = "自如"
 
-            posi = ",".join([data_dict['lat'], data_dict['lng']])
-            if posi not in self.community_id_list:
-                self.community_id_list.append(posi)
-                
-            data_dict["community_id"] = self.community_id_list.index(posi)
+            get_community(data_dict)
 
-            data_dict = dict(self.__bd_map__(
-                data_dict["community_id"], data_dict["lat"], data_dict["lng"]
-                ), **data_dict
-            )
+            data_dict = self.__bd_mapper__(data_dict)
 
             yield data_dict
 
@@ -179,17 +198,31 @@ class Do(object):
 ######################### ETL QINGKE #########################
 
     def etl_qk(self):
-        e_data = self.__e_qk__()
+        '''etl_qk
+        ETL project for qk.
+        '''
+
+        e_data = self.__e_data_iter__
         t_data = self.__t_qk__(e_data)
         _      = self.__l_qk__(t_data)
-
-    def __e_qk__(self):
-        for data in self.rds_data_iter:
-            data = data[1]
-            yield json.loads(data)
             
     def __t_qk__(self, e_data):
+        '''__t_qk__
+        QK transformer.
+        '''
+
+        # Turn &#xxxx; to char.
+        def hex_to_str(hex_match):
+            hex_data = re.findall(r"[0-9A-Z]+", hex_match.group())[0]
+            return chr(int(hex_data, 16))
+
+        def html_to_str(html):
+            cpl = re.compile(r"&#x[0-9A-Z]+;")
+            html = re.sub(cpl, hex_to_str, html)
+            return html
+            
         t_dict = dict(
+            origin_price    = "origin_price",
             house_id        = "house_id",
             community_id    = "comm_id",
             community_name  = "comm_name",
@@ -204,15 +237,6 @@ class Do(object):
             area            = "area"        
         )
 
-        def hex_to_str(hex_match):
-            hex_data = re.findall(r"[0-9A-Z]+", hex_match.group())[0]
-            return chr(int(hex_data, 16))
-
-        def html_to_str(html):
-            cpl = re.compile(r"&#x[0-9A-Z]+;")
-            html = re.sub(cpl, hex_to_str, html)
-            return html
-
         # Clean data by lamdba functions.
         t_clean_dict = dict (
             floor           = lambda f, data: ",".join(re.findall(r"楼层：(.+)", f)[0].split('/')),
@@ -223,39 +247,23 @@ class Do(object):
         )
 
         for data in e_data:
-            data_dict = dict()
-
-            for t in t_dict.items():
-                try:
-                    data_dict[t[0]] = data[t[1]]
-                except Exception:
-                    data_dict[t[0]] = None
-
-            for t in t_clean_dict.items():
-                try:
-                    data_dict[t[0]] = t[1](data_dict[t[0]], data)
-                except Exception:
-                    pass
+            
+            data_dict = self.__transformer__(data, t_dict, t_clean_dict)
 
             data_dict["source_from"] = 3
             data_dict["source_name"] = "青客"
 
-            data_dict = dict(self.__bd_map__(
-                data_dict["community_id"], data_dict["lat"], data_dict["lng"]
-                ), **data_dict
-            )
+            data_dict = self.__bd_mapper__(data_dict)
 
             yield data_dict
 
     def __l_qk__(self, t_data):
-        from pprint import pprint
 
         for data in t_data:
-            pprint(data)
+            print(data)
             a = input("DEBUG")
 
 ######################### BAIDU MAP #########################
-
 
     def __bd_map__(self, community_id, lat, lng):
         from requests import get
