@@ -19,7 +19,6 @@ class ParserDetail(object):
         '''save
         Save parsed data into redis.
         '''
-        from xml.sax.saxutils import unescape
 
         for res, rds_kv, idx in self.detail_res_iter:
 
@@ -30,9 +29,9 @@ class ParserDetail(object):
             
             rtn_data = dict()
             
+            # Request by HTML Web page.
             if int(crawler['method']) == 2:
-                with open("test1.html", "w") as f:
-                    f.write(res.decode('utf-8'))
+
                 xml_data = etree.HTML(res)
                 for k, v in zip(parser.keys(), parser.values()):
                     try:
@@ -44,7 +43,9 @@ class ParserDetail(object):
                         print("Err: {}".format(e))
                 self.rds.__update_dict_to_redis__(".".join([rds_kv[k] for k in self.crawler_conf['sys_conf']['redis_key'].split('.')]), rtn_data)
                 
+            # Request by HTTP Api.
             else:
+                # print(res, rds_kv, idx)
                 find_data = parser["data_path"].split('.')            
                 parser.pop('data_path')        
                 res = json.loads(res.decode('utf-8'))
@@ -54,10 +55,12 @@ class ParserDetail(object):
                         rtn_data[k] = data[v]
                     try:
                         rtn_data = eval("extra.{}_extra({})".format(self.crawler_name, rtn_data))
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        print("Err:{}".format(e))
+                        
                     self.rds.__update_dict_to_redis__(".".join([rds_kv[k] for k in self.crawler_conf['sys_conf']['redis_key'].split('.')]), rtn_data)
                 except Exception as e:
                     print("Parse Detail Error! Err:{} Result:{}".format(e, res))
                 finally:
                     parser['data_path'] = '.'.join(find_data)
+                    rtn_data = dict()

@@ -16,9 +16,10 @@ def ziroom_extra(rtn_data):
     
     '''
     price_dict = dict()
+
     price, price_dict = get_price_from_png(rtn_data["price"], price_dict)
     rtn_data["price"] = price
-    
+
     payment_rtn_list = list()
     for payment in rtn_data["paymentlist"]:
         payment_rtn = dict()
@@ -67,7 +68,8 @@ def get_price_from_png(price_object, price_dict):
             price.write(t[idx])
 
         price_dict[url] = t
-        
+
+        print("********", t, price_object[2])        
         return price.getvalue(), price_dict
 
     except Exception as e:

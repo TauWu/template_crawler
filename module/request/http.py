@@ -282,7 +282,7 @@ class HTTPDetailRequest(object):
                         req = ProxiesRequests(url_tpl_dict['0'], need_cookies=True)
                         if "headers" in self.sys.keys():
                             req.add_headers(json.loads(self.sys['headers']))
-
+                        
                         ctn         = req.req_content_list
                         res_list    = ctn[0]
                         cookies     = ctn[1]
@@ -313,6 +313,6 @@ class HTTPDetailRequest(object):
                                 yield res[0], rds_kv, idxx
                             
                         url_tpl_dict    = {k:[] for k in url_tpl_dict.keys()}
-                        rds_kv_list     = list()
+                        rds_kv_list     = rds_kv_list[mutil:]
                         
                     url_tpl_dict[str(idx)].append(url)
