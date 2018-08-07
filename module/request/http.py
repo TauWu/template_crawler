@@ -60,7 +60,7 @@ class HTTPListRequest(object):
                     if cursor > int(total):
                         break
 
-                    break   # debug code
+                    # break   # debug code
 
                     
         else:
