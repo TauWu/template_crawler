@@ -39,14 +39,11 @@ class ParserList(object):
             for result in self.list_res_iter:
                 rtn_datas = list()
 
-                print("111111111111")
                 with open("test.html", "w") as f:
                     f.write(etree.tostring(result).decode('utf-8'))
                 
                 for k, v in parser.items():
                     rtn_data_list   = list()
-
-                    print("****", k, v)
    
                     for data in result.xpath(v):
                         rtn_data = dict()
@@ -63,12 +60,10 @@ class ParserList(object):
 
                     rtn_datas.append(rtn_data_list)
                 
-                print("1111111111112", rtn_datas)
-
                 for rtn in zip(*rtn_datas):
                     for items in rtn:
                         rtn_data = dict(rtn_data, **items)
-                    print("*********", rtn_data)
+
                     if len(rtn_data.items()) > 0:
                         self.__update_redis__(rtn_data)
 
