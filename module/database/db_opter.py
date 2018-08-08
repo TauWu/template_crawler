@@ -117,6 +117,9 @@ class DBOpter(object):
 
             for kv in res1.items():
 
+                if kv[0].endswith("id"):
+                    continue
+
                 if res[kv[0]] == kv[1]:
                     continue
                 else:
