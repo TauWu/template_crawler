@@ -170,14 +170,33 @@ class Do(object):
         Ziroom transformer.
         '''
 
+        self.db.db.execute(
+            "select max(cast(community_id as unsigned integer)) as max from community_info where source_from = 2 and enabled = 1"
+        )
+        data = self.db.db.cur.fetchone()
+        max_id = data["max"]
+
         def get_community(data_dict):
             '''get_community
             Get new community id if it's not exists.
             '''
-            posi = ",".join([data_dict['lat'], data_dict['lng']])
-            if posi not in self.community_id_list:
-                self.community_id_list.append(posi)    
-            data_dict["community_id"] = self.community_id_list.index(posi)
+
+            self.db.db.execute(
+                "select community_id from community_info where lat = {lat} and lng = {lng} and enabled = 1".format(
+                    lat=data_dict['lat'], lng=data_dict['lng']
+                )
+            )
+            data = self.db.db.cur.fetchone()
+            community_id = data["community_id"]
+
+            if community_id is None:
+
+                posi = ",".join([data_dict['lat'], data_dict['lng']])
+                if posi not in self.community_id_list:
+                    self.community_id_list.append(posi)    
+                community_id = max_id + 1 + self.community_id_list.index(posi)
+
+            data_dict["community_id"] = community_id
 
         # Load data from redis to transformer.
         t_dict = dict(
