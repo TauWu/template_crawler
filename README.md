@@ -30,11 +30,15 @@ Template Crawler | [@TauWu](https://github.com/TauWu/) | 2018-07-19 | Linux (Bas
 	- [x] Test Full House Info from [qk365](http://www.qk365.com)
 	- [x] Test Full House Info from [lianjia](https://sh.lianjia.com)
 
-- [ ] ETL Project
-	- [ ] Extract Data from Redis
-	- [ ] Transform and clean data
-	- [ ] Load Data and save
+- [x] ETL Project
+	- [x] Extract Data from Redis
+	- [x] Transform and clean data
+	- [x] Load Data and save
 
+- [ ] Log Module
+	- [ ] Log into files.
+	- [ ] log into database.
+	
 ## Future TODOs
 
 - [ ] Data Warehouse
@@ -49,14 +53,18 @@ Template Crawler | [@TauWu](https://github.com/TauWu/) | 2018-07-19 | Linux (Bas
 ```sh
 # Python interpreter.
 apt-get install python3
+
 # Pip tools to install 3rd-party modules.
 apt-get install python3-pip
+
 # Save Hash Map data.
 apt-get install redis-server
+
 # Save structured data.
 apt-get install mysql-server
-# Parse HTML files.
-apt-get install python-bs4
+
+# Use tesseract-ocr to convert img to string.
+apt-get install tesseract-ocr
 ```
 
 ### Module Needs
@@ -64,18 +72,27 @@ apt-get install python-bs4
 ```sh
 # Better method to start requests.
 pip3 install requests
+
 # Connect to MySQL and control it.
 pip3 install PyMySQL
+
 # Read and write config files.
 pip3 install configparser
-# Parser HTML files.
-pip3 install beautifulsoup4
+
 # Read HTML files as a balance tree.
 pip3 install lxml
+
 # Provide random UA when request a host.
 pip3 install fake-useragent
+
 # Connect to Redis server and control it.
 pip3 install redis
+
+# Edit images.
+pip3 install pillow
+
+# Use tesseract-ocr in python.
+pip3 install pytesseract
 ```
 
 ## Crawler Types
@@ -88,3 +105,8 @@ Type No. | Crawler methods
 2 | Request HTTP APIs to get detail info.
 3 | Request Web HTML to get list info.
 4 | Request Web HTML to get detail info.
+
+## Tips
+
+1. Here is the crawl difficulty's order of different websites: ziroom > lianjia > qk.
+2. When you get the rent price of ziroom, you're supposed to download a temp img, and then, get the string from img by using OCR tools. Ziroom website will give the index of each number and you should joint it.
