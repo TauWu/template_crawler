@@ -38,6 +38,9 @@ Template Crawler | [@TauWu](https://github.com/TauWu/) | 2018-07-19 | Linux (Bas
 - [ ] Log Module
 	- [ ] Log into files.
 	- [ ] log into database.
+
+- [ ] Async Func
+	- [ ] Turn Gevent to Async Func.
 	
 ## Future TODOs
 

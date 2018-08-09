@@ -1,9 +1,15 @@
 # Parser Detail
 # Parse detail page
-import json, re
-from lxml import etree
+
 from util.common.tools import finder
-import module.parser.extra as extra
+from module.parser.extra import *
+from constant.config import REQUEST_CFG
+
+import asyncio
+import json
+import re
+from os import remove, walk
+from lxml import etree
 
 class ParserDetail(object):
 
@@ -13,54 +19,109 @@ class ParserDetail(object):
         self.crawler_name    = crawler_name
         self.rds             = rds
         self.compiles        = crawler_conf['compiles']
+        self.mutil           = int(REQUEST_CFG['mutil'])
+        self.task_dict       = dict()
 
     @property
     def save(self):
         '''save
         Save parsed data into redis.
         '''
+        flag = True
+        while flag:
 
-        for res, rds_kv, idx in self.detail_res_iter:
+            try:
+                res, rds_kv, idx = next(self.detail_res_iter)
 
-            # print(self.crawler_conf["detail_crawlers"], idx)
-
-            crawler     = self.crawler_conf['detail_crawlers'][idx]
-            parser      = self.crawler_conf['detail_parsers'][idx]
-            
-            rtn_data = dict()
-            
-            # Request by HTML Web page.
-            if int(crawler['method']) == 2:
-
-                xml_data = etree.HTML(res)
-                for k, v in zip(parser.keys(), parser.values()):
-                    try:
-                        if k in self.compiles.keys():
-                            rtn_data[k] = re.findall(self.compiles[k], etree.tostring(xml_data.xpath(v)[0]).decode('utf-8'))[0]
-                        else:
-                            rtn_data[k] = xml_data.xpath(v)[0].xpath('./text()')[0].strip()
-                    except Exception as e:
-                        print("Err: {}".format(e))
-                self.rds.__update_dict_to_redis__(".".join([rds_kv[k] for k in self.crawler_conf['sys_conf']['redis_key'].split('.')]), rtn_data)
+                crawler     = self.crawler_conf['detail_crawlers'][idx]
+                parser      = self.crawler_conf['detail_parsers'][idx]
                 
-            # Request by HTTP Api.
-            else:
-                # print(res, rds_kv, idx)
-                find_data = parser["data_path"].split('.')            
-                parser.pop('data_path')        
-                res = json.loads(res.decode('utf-8'))
-                try:
-                    data = finder(res, find_data)
+                rtn_key  = ".".join([rds_kv[k] for k in self.crawler_conf['sys_conf']['redis_key'].split('.')])
+                rtn_data = dict()
+                
+                # Request by HTML Web page.
+                if int(crawler['method']) == 2:
+
+                    xml_data = etree.HTML(res)
                     for k, v in zip(parser.keys(), parser.values()):
-                        rtn_data[k] = data[v]
+                        try:
+                            if k in self.compiles.keys():
+                                rtn_data[k] = re.findall(self.compiles[k], etree.tostring(xml_data.xpath(v)[0]).decode('utf-8'))[0]
+                            else:
+                                rtn_data[k] = xml_data.xpath(v)[0].xpath('./text()')[0].strip()
+                        except Exception as e:
+                            print("Err: {}".format(e))
+                    self.rds.__update_dict_to_redis__(rtn_key, rtn_data)
+                    
+                # Request by HTTP Api.
+                else:
+                    find_data = parser["data_path"].split('.')            
+                    parser.pop('data_path')        
+                    res = json.loads(res.decode('utf-8'))
                     try:
-                        rtn_data = eval("extra.{}_extra({})".format(self.crawler_name, rtn_data))
+                        data = finder(res, find_data)
+                        for k, v in zip(parser.keys(), parser.values()):
+                            rtn_data[k] = data[v]
+                        try:
+                            self.task_dict = dict(
+                                {rtn_key:rtn_data}, **self.task_dict
+                            )
+                        except Exception as e:
+                            print(e)
+                            
+                        # self.rds.__update_dict_to_redis__(rtn_key, rtn_data)
                     except Exception as e:
-                        print("Err:{}".format(e))
+                        print("Parse Detail Error! Err:{} Result:{}".format(e, res))
+                    finally:
+                        parser['data_path'] = '.'.join(find_data)
+                        rtn_data = dict()
+
+            except Exception:
+                flag = False
+            
+            if len(self.task_dict.items()) >= self.mutil or not flag:
+                loop = asyncio.get_event_loop()
+                data = loop.run_until_complete(self.aextra(loop))
+                if data:
+                    for k, p in data.items():
+                        self.rds.__update_dict_to_redis__(k, p)
+                    self.task_dict = dict()
+
+    async def aextra(self, loop):
+        '''aextra
+        Mutil io about extra func.
+        '''
+        
+        try:
+            eval("{}_extra".format(self.crawler_name))
+        except Exception:
+            return False
+
+        task_dict = self.task_dict
+        k_list = list()
+        v_list = list()
+        t_list = list()
+
+        for k, v in zip(task_dict.keys(), task_dict.values()):
+            k_list.append(k)
+            v_list.append(v)
+
+        for v in v_list:
                         
-                    self.rds.__update_dict_to_redis__(".".join([rds_kv[k] for k in self.crawler_conf['sys_conf']['redis_key'].split('.')]), rtn_data)
-                except Exception as e:
-                    print("Parse Detail Error! Err:{} Result:{}".format(e, res))
-                finally:
-                    parser['data_path'] = '.'.join(find_data)
-                    rtn_data = dict()
+            t_list.append(
+                loop.run_in_executor(
+                    None, eval, *("{}_extra({})".format(
+                        self.crawler_name, v
+                    ), globals())
+                )
+            )
+
+        for k, t in zip(k_list, t_list):
+            task_dict[k] = await t
+
+        for _, _, files in walk("_output"):
+            for file in files:
+                if file.endswith("png"):
+                    remove("_output/%s"%file)
+        
+        return task_dict
