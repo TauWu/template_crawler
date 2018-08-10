@@ -194,8 +194,9 @@ class Do(object):
                     lat=data_dict['lat'], lng=data_dict['lng']
                 )
             )
-            data = self.db.db.cur.fetchone()
             try:
+                
+                data = self.db.db.cur.fetchone()
                 community_id = data["community_id"]
 
             except Exception:
