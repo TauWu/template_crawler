@@ -190,7 +190,7 @@ class Do(object):
             '''
 
             try:
-                
+
                 self.db.db.execute(
                     "select community_id from community_info where source_from = 2 and lat = {lat} and lng = {lng} and enabled = 1".format(
                         lat=data_dict['lat'], lng=data_dict['lng']
@@ -202,10 +202,16 @@ class Do(object):
 
             except Exception:
 
-                posi = ",".join([data_dict['lat'], data_dict['lng']])
-                if posi not in self.community_id_list:
-                    self.community_id_list.append(posi)    
-                community_id = max_id + 1 + self.community_id_list.index(posi)
+                try:
+
+                    posi = ",".join([data_dict['lat'], data_dict['lng']])
+                    if posi not in self.community_id_list:
+                        self.community_id_list.append(posi)    
+                    community_id = max_id + 1 + self.community_id_list.index(posi)
+                    
+                except Exception:
+
+                    return False
             
             finally:
                 data_dict["community_id"] = community_id
@@ -243,7 +249,8 @@ class Do(object):
             data_dict["source_from"] = 2
             data_dict["source_name"] = "自如"
 
-            get_community(data_dict)
+            if get_community(data_dict):
+                continue
 
             data_dict = self.__bd_mapper__(data_dict)
 
