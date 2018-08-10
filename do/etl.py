@@ -189,13 +189,14 @@ class Do(object):
             Get new community id if it's not exists.
             '''
 
-            self.db.db.execute(
-                "select community_id from community_info where source_from = 2 and lat = {lat} and lng = {lng} and enabled = 1".format(
-                    lat=data_dict['lat'], lng=data_dict['lng']
-                )
-            )
             try:
                 
+                self.db.db.execute(
+                    "select community_id from community_info where source_from = 2 and lat = {lat} and lng = {lng} and enabled = 1".format(
+                        lat=data_dict['lat'], lng=data_dict['lng']
+                    )
+                )
+
                 data = self.db.db.cur.fetchone()
                 community_id = data["community_id"]
 
