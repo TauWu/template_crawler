@@ -188,6 +188,8 @@ class Do(object):
         )
         data = self.db.db.cur.fetchone()
         max_id = data["max"]
+        if max_id is None:
+            max_id = 0
 
         def get_community(data_dict):
             '''get_community
@@ -214,11 +216,11 @@ class Do(object):
                         self.community_id_list.append(posi)    
                     community_id = max_id + 1 + self.community_id_list.index(posi)
                     
-                except Exception:
-
-                    return False
+                except Exception as e:
+                    return data_dict
             
             data_dict["community_id"] = community_id
+            return data_dict
 
         # Load data from redis to transformer.
         t_dict = dict(
@@ -255,7 +257,9 @@ class Do(object):
             data_dict["source_from"] = 2
             data_dict["source_name"] = "自如"
 
-            if get_community(data_dict):
+            data_dict = get_community(data_dict)
+            
+            if "community_id" not in data_dict.keys():
                 continue
 
             data_dict = self.__bd_mapper__(data_dict)

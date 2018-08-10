@@ -3,8 +3,7 @@
 
 from util.web.proxies import ProxiesRequests
 from util.redis import RedisController
-from module.redis.scan import RedisScanner
-from constant.config import REDIS_CFG, conf_kv_func
+from constant.config import conf_kv_func
 
 from pytesseract import image_to_string
 from PIL import Image
