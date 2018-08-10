@@ -31,7 +31,8 @@ class Do(object):
             self.base_tbkeys = [
                 'house_id', 'community_id', 'orientation', 'house_area',
                 'house_price', 'house_floor', 'house_type_new',
-                'sale_date', 'sale_date_new', 'see'
+                'sale_date', 'sale_date_new', 'see_count', 'see_stat_total',
+                'see_stat_weekly', 'title'
             ]
             self.etl_lianjia()
 
@@ -120,9 +121,11 @@ class Do(object):
             house_price     = "price_dtl",
             house_floor     = "floor",
             area            = "area",
-            see             = 'see',
-            sale_date       = 'sale_date',
-            sale_date_new   = 'sale_date_new'
+            see_count       = "see",
+            sale_date       = "sale_date",
+            sale_date_new   = "sale_date_new",
+            see_stat_total  = "see_tl",
+            see_stat_weekly = "see_wk"
         )
 
         # Clean data by lamdba functions.
@@ -131,7 +134,8 @@ class Do(object):
             lng             = lambda ll, data: ll.split(',')[0],
             house_price     = lambda p, data: int(clean_price(p, data)),
             house_floor     = lambda f, data: ",".join(re.findall("(.+)楼层 \(共([0-9]+)层\)", f)[0]),
-            area            = lambda a, data: int(re.findall("([0-9]+)", a)[0])
+            area            = lambda a, data: int(re.findall("([0-9]+)", a)[0]),
+            see_count       = lambda c, data: int(c)
         )
 
         def clean_price(p, data):

@@ -61,7 +61,8 @@ class ParserDetail(object):
                     try:
                         data = finder(res, find_data)
                         for k, v in zip(parser.keys(), parser.values()):
-                            rtn_data[k] = data[v]
+                            v_data = finder(data, v.split('.'))
+                            rtn_data[k] = v_data
                         try:
                             self.task_dict = dict(
                                 {rtn_key:rtn_data}, **self.task_dict
@@ -69,7 +70,7 @@ class ParserDetail(object):
                         except Exception as e:
                             print(e)
                             
-                        # self.rds.__update_dict_to_redis__(rtn_key, rtn_data)
+                        self.rds.__update_dict_to_redis__(rtn_key, rtn_data)
                     except Exception as e:
                         print("Parse Detail Error! Err:{} Result:{}".format(e, res))
                     finally:
