@@ -30,7 +30,8 @@ class Do(object):
             self.base_tbname = "house_base_infolj"
             self.base_tbkeys = [
                 'house_id', 'community_id', 'orientation', 'house_area',
-                'house_price', 'house_floor', 'house_type_new'
+                'house_price', 'house_floor', 'house_type_new',
+                'sale_date', 'sale_date_new', 'see'
             ]
             self.etl_lianjia()
 
@@ -118,7 +119,10 @@ class Do(object):
             orientation     = "orientation",
             house_price     = "price_dtl",
             house_floor     = "floor",
-            area            = "area"
+            area            = "area",
+            see             = 'see',
+            sale_date       = 'sale_date',
+            sale_date_new   = 'sale_date_new'
         )
 
         # Clean data by lamdba functions.
@@ -212,7 +216,7 @@ class Do(object):
             price           = "price",
             floor           = "floor",
             area            = "area",
-
+            
             paymentlist     = "paymentlist"
         )
 
@@ -239,7 +243,7 @@ class Do(object):
 
     def __l_ziroom__(self, t_data):
         for data in t_data:
-            self.db.update_data(self.community_tbname, data, self.community_tbkeys, lat=data['lat'], lng=data['lng'])
+            self.db.update_data(self.community_tbname, data, self.community_tbkeys, source_from=data["source_from"], lat=data['lat'], lng=data['lng'])
             self.db.update_data(self.base_tbname, data, self.base_tbkeys, house_id=data['house_id'])
 
 ######################### ETL QINGKE #########################

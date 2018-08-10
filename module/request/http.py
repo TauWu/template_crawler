@@ -154,8 +154,8 @@ class HTTPListRequest(object):
             for idxx in range(0, mutil):
                 url_list.append(url_tpl.format(cpath, idx+idxx))
 
-            idx += mutil * pageshow
-            yield ProxiesRequests(url_list), idx
+            idx += mutil
+            yield ProxiesRequests(url_list), idx*pageshow
 
             
 
