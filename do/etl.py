@@ -32,7 +32,7 @@ class Do(object):
                 'house_id', 'community_id', 'orientation', 'house_area',
                 'house_price', 'house_floor', 'house_type_new',
                 'sale_date', 'sale_date_new', 'see_count', 'see_stat_total',
-                'see_stat_weekly', 'title'
+                'see_stat_weekly', 'house_title'
             ]
             self.etl_lianjia()
 
@@ -41,7 +41,7 @@ class Do(object):
             self.base_tbname = "house_base_infozr"
             self.base_tbkeys = [
                 'house_id', 'community_id', 'price',
-                'house_type', 'floor'
+                'house_type', 'floor', 'status', 'house_code'
             ]
             self.etl_ziroom()
         
@@ -112,6 +112,7 @@ class Do(object):
             house_id        = "house_id",
             community_id    = "comm_id",
             community_name  = "comm_name",
+            house_area      = "area",
             lat             = "lat_lng",
             lng             = "lat_lng",
             cw_district     = "district",
@@ -125,17 +126,21 @@ class Do(object):
             sale_date       = "sale_date",
             sale_date_new   = "sale_date_new",
             see_stat_total  = "see_tl",
-            see_stat_weekly = "see_wk"
+            see_stat_weekly = "see_wk",
+            house_title     = "title"
         )
 
         # Clean data by lamdba functions.
         t_clean_dict = dict (
             lat             = lambda ll, data: ll.split(',')[1],
             lng             = lambda ll, data: ll.split(',')[0],
-            house_price     = lambda p, data: int(clean_price(p, data)),
-            house_floor     = lambda f, data: ",".join(re.findall("(.+)楼层 \(共([0-9]+)层\)", f)[0]),
-            area            = lambda a, data: int(re.findall("([0-9]+)", a)[0]),
-            see_count       = lambda c, data: int(c)
+            house_price     = lambda p,  data: int(clean_price(p, data)),
+            house_floor     = lambda f,  data: ",".join(re.findall("(.+)楼层 \(共([0-9]+)层\)", f)[0]),
+            area            = lambda a,  data: int(re.findall("([0-9]+)", a)[0]),
+            see_count       = lambda c,  data: int(c),
+            sale_date       = lambda sd, date: re.findall(r"([0-9.]+)", sd)[0],
+            sale_date_new   = lambda sd, date: re.findall(r"([0-9]+)", sd)[0],
+            house_area      = lambda a,  date: re.findall(r"([0-9]+)", a)[0],
         )
 
         def clean_price(p, data):
@@ -213,8 +218,7 @@ class Do(object):
 
                     return False
             
-            finally:
-                data_dict["community_id"] = community_id
+            data_dict["community_id"] = community_id
 
         # Load data from redis to transformer.
         t_dict = dict(
@@ -230,6 +234,8 @@ class Do(object):
             price           = "price",
             floor           = "floor",
             area            = "area",
+            status          = 'status',
+            house_code      = "house_code",
             
             paymentlist     = "paymentlist"
         )

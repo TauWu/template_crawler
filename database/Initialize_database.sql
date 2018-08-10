@@ -63,11 +63,14 @@ CREATE TABLE `house_base_infoqk` (
 DROP TABLE IF EXISTS `house_base_infozr`;
 CREATE TABLE `house_base_infozr` (
   `house_info_id` int(11) NOT NULL AUTO_INCREMENT COMMENT '自增 ID',
-  `house_id` varchar(60) NOT NULL DEFAULT '' COMMENT '源房屋ID',
-  `price` decimal(18,2) NOT NULL DEFAULT 0.0 COMMENT '价格',
-  `floor` varchar(20) NOT NULL DEFAULT '' COMMENT '楼层',
-  `house_type` varchar(20) NOT NULL DEFAULT '' COMMENT '户型',
-  `community_id` varchar(60) NOT NULL DEFAULT '' COMMENT '小区ID',
+  `house_id`      varchar(60) NOT NULL DEFAULT '' COMMENT '源房屋ID',
+  `house_code`    varchar(30) NOT NULL DEFAULT '' COMMENT '房间编号',
+  `price`         decimal(18,2) NOT NULL DEFAULT 0.0 COMMENT '价格',
+  `floor`         varchar(20) NOT NULL DEFAULT '' COMMENT '楼层',
+  `house_type`    varchar(20) NOT NULL DEFAULT '' COMMENT '户型',
+  `community_id`  varchar(60) NOT NULL DEFAULT '' COMMENT '小区ID',
+  `status`        varchar(20) NOT NULL DEFAULT '' COMMENT '房间状态',
+
 
   `enabled`     int(1) NOT NULL DEFAULT 1 COMMENT '是否删除',
   `create_by`   varchar(100) NOT NULL DEFAULT '' COMMENT '创建人',

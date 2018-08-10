@@ -21,6 +21,7 @@ class ParserDetail(object):
         self.compiles        = crawler_conf['compiles']
         self.mutil           = int(REQUEST_CFG['mutil'])
         self.task_dict       = dict()
+        self.task_dict_dtl   = dict()
 
     @property
     def save(self):
@@ -51,7 +52,16 @@ class ParserDetail(object):
                                 rtn_data[k] = xml_data.xpath(v)[0].xpath('./text()')[0].strip()
                         except Exception as e:
                             print("Err: {}".format(e))
-                    self.rds.__update_dict_to_redis__(rtn_key, rtn_data)
+
+                    try:
+                        self.task_dict = dict(
+                            {rtn_key:rtn_data}, **self.task_dict
+                        )
+                    except Exception as e:
+                        print(e)
+
+                    if len(self.task_dict.items()) == 0:
+                        self.rds.__update_dict_to_redis__(rtn_key, rtn_data)
                     
                 # Request by HTTP Api.
                 else:
@@ -70,7 +80,9 @@ class ParserDetail(object):
                         except Exception as e:
                             print(e)
                             
-                        self.rds.__update_dict_to_redis__(rtn_key, rtn_data)
+                        if len(self.task_dict.items()) == 0:
+                            self.rds.__update_dict_to_redis__(rtn_key, rtn_data)
+                            
                     except Exception as e:
                         print("Parse Detail Error! Err:{} Result:{}".format(e, res))
                     finally:
@@ -99,27 +111,31 @@ class ParserDetail(object):
             return False
 
         task_dict = self.task_dict
-        k_list = list()
-        v_list = list()
-        t_list = list()
+        k_list = list()     # Key List
+        v_list = list()     # Val List
+        t_list = list()     # Tsk List
 
         for k, v in zip(task_dict.keys(), task_dict.values()):
             k_list.append(k)
             v_list.append(v)
 
-        for v in v_list:
+        # Create task list.
+        for k, v in zip(k_list, v_list):
                         
             t_list.append(
                 loop.run_in_executor(
-                    None, eval, *("{}_extra({})".format(
-                        self.crawler_name, v
+                    None, eval, *("{}_extra({}, {})".format(
+                        # Use inner func eval to call function with string.
+                        self.crawler_name, k, v
                     ), globals())
                 )
             )
 
+        # Await execute funcs.
         for k, t in zip(k_list, t_list):
             task_dict[k] = await t
 
+        # delete useless temp files after all threads finished.
         for _, _, files in walk("_output"):
             for file in files:
                 if file.endswith("png"):
