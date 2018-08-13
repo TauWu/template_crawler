@@ -59,9 +59,7 @@ class ParserDetail(object):
                         )
                     except Exception as e:
                         print(e)
-
-                    if len(self.task_dict.items()) == 0:
-                        self.rds.__update_dict_to_redis__(rtn_key, rtn_data)
+                    self.rds.__update_dict_to_redis__(rtn_key, rtn_data)
                     
                 # Request by HTTP Api.
                 else:
