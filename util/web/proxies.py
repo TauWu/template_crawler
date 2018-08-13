@@ -109,15 +109,20 @@ class ProxiesRequests(ProxiesHeaders):
 
                 # print("&&&&", req_content)
                 
-                if str(req_content).find("The number of requests exceeds the limit") != -1 or str(req_content).find("Concurrent number exceeds limit") != -1 or str(req_content) == "b''":
+                if str(req_content).find("Concurrent number exceeds limit") != -1 or str(req_content) == "b''":
                     # 端口转发太频繁 重新发起请求
                     # 针对安居客 返回数据为空 重新发起请求
-                    print("DEBUG1")
+                    print("Request too fast, continue...")
                     time.sleep(0.5)
                     continue
 
+                if str(req_content).find("The number of requests exceeds the limit") != -1:
+                    # 代理需要续费
+                    print("[ERR] Exceed the limit, STOP!")
+                    break
+
                 if str(req_content).find("Bad Gateway") != -1 or str(req_content).find("The requested URL could not be retrieved") != -1:
-                    print("DEBUG2")
+                    print("Get bad gateway, continue...")
                     time.sleep(0.5)
                     continue
                     
