@@ -2,11 +2,14 @@
 # Parse list info
 
 from util.common.tools import finder
+from util.common.logger import LogBase
 import lxml
 
-class ParserList(object):
+class ParserList(LogBase):
 
-    def __init__(self, list_res_iter, crawler_conf, rds, rds_key):
+    def __init__(self, project_name, list_res_iter, crawler_conf, rds, rds_key):
+        LogBase.__init__(self, project_name, "ParserList")
+        self.project_name    = project_name
         self.list_res_iter   = list_res_iter
         self.crawler_conf    = crawler_conf
         self.rds             = rds
@@ -33,8 +36,9 @@ class ParserList(object):
                         for k, v in zip(parser.keys(), parser.values()):
                             rtn_data[k] = data[v]
                         self.__update_redis__(rtn_data)
-                except Exception:
-                    pass
+                except Exception as e:
+                    self.err("Parser by json failed", err=e)
+                    
         else:
             for result in self.list_res_iter:
                 rtn_datas = list()
@@ -54,7 +58,7 @@ class ParserList(object):
                             else:
                                 rtn_data[k] = data.xpath('./text()')[0].replace('\xa0\xa0', '')
                         except Exception as e:
-                            print('save {} err : {}'.format(k, e))
+                            self.error("Parser by lxml failed.", key=k, err=e)
 
                         rtn_data_list.append(rtn_data)
 

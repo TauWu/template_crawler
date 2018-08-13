@@ -4,6 +4,7 @@
 from util.web.proxies import ProxiesRequests
 from util.redis import RedisController
 from constant.config import conf_kv_func
+from util.common.logger import LogBase
 
 from pytesseract import image_to_string
 from PIL import Image
@@ -11,11 +12,13 @@ from PIL import Image
 from re import findall
 from io import StringIO
 
-def ziroom_extra(rid, rtn_data):
+def ziroom_extra(project_name, rid, rtn_data):
     '''ziroom_extra
     Ziroom Extra func.
     
     '''
+    logger = LogBase(project_name, "ziroom_extra")
+    logger.debug("Before Extra =>", data=rtn_data)
     # Extra func for house code.
     try:
         end = rtn_data['house_code'].split('_')[1]
@@ -24,14 +27,14 @@ def ziroom_extra(rid, rtn_data):
     else:
         end = int(end)
         if end > 1:
-            rds = RedisController(int(conf_kv_func("ziroom.sys_config", all=True)['redis_db']))
+            rds = RedisController(int(conf_kv_func("ziroom.sys_config", all=True)['redis_db']), project_name)
             for idx in range(1, end):
                 rds.__update_dict_to_redis__(rid-idx, {})
                 
     # Extra func for price.
     try:
         price_dict = dict()
-        price, price_dict = get_price_from_png(rtn_data["price"], price_dict)
+        price, price_dict = get_price_from_png(rtn_data["price"], price_dict, project_name)
         
         rtn_data["price"] = price
     
@@ -47,7 +50,7 @@ def ziroom_extra(rid, rtn_data):
                 if k == "period":
                     payment_rtn["period"] = v
                 else:
-                    payment_rtn[k], price_dict = get_price_from_png(v, price_dict)
+                    payment_rtn[k], price_dict = get_price_from_png(v, price_dict, project_name)
                     
             payment_rtn_list.append(payment_rtn)
 
@@ -56,13 +59,17 @@ def ziroom_extra(rid, rtn_data):
     except Exception:
         pass
 
+    logger.debug("After Extra =>", data=rtn_data)
+
     return rtn_data
 
-def get_price_from_png(price_object, price_dict):
+def get_price_from_png(price_object, price_dict, project_name):
     '''get_price_from_png
     Get price info from png files by using tesseract OCR.
     
     '''
+    logger          = LogBase(project_name, "ziroom_ocr")
+
     try:
         price = StringIO()
         url = "http:{}".format(price_object[0])
@@ -71,7 +78,7 @@ def get_price_from_png(price_object, price_dict):
             t = price_dict[url]
         else:
             img_path = "_output/{}".format(findall(r"/([0-9a-zA-z]+.png)", url)[0])
-            req = ProxiesRequests([url])
+            req = ProxiesRequests([url], project_name)
             ctn = req.req_content_list[0][0]
 
             with open(img_path, "wb") as img:
@@ -90,10 +97,12 @@ def get_price_from_png(price_object, price_dict):
 
         price_dict[url] = t
 
+        logger.debug("OCR price =>", price=price.getvalue(), price_dict=price_dict)
+
         return price.getvalue(), price_dict
 
     except Exception as e:
-        print("Err:", e)
+        logger.warn("OCR failed.", err=e)
         return "", price_dict
 
     finally:

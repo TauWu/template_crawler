@@ -3,18 +3,21 @@
 
 from util.common.tools import finder
 from util.web.proxies import ProxiesRequests
+from util.common.logger import LogBase
 
 from constant.config import REQUEST_CFG
 
 import json, re
 from lxml import etree
 
-class HTTPListRequest(object):
+class HTTPListRequest(LogBase):
 
-    def __init__(self, crawler_conf):
-        self.crawler = crawler_conf['list_crawler']
-        self.sys     = crawler_conf['sys_conf']
-        self.compiles= crawler_conf['compiles']
+    def __init__(self, crawler_conf, project_name="sample"):
+        LogBase.__init__(self, project_name, "ReqList")
+        self.project_name   = project_name
+        self.crawler        = crawler_conf['list_crawler']
+        self.sys            = crawler_conf['sys_conf']
+        self.compiles       = crawler_conf['compiles']
 
     @property
     def list_res_iter(self):
@@ -30,7 +33,7 @@ class HTTPListRequest(object):
 
         if method == 2:
             for cpath in childpath:
-                mutil_req_iter = HTTPListRequest.__mutil_req__(method, mutil, crawler, cpath=cpath)
+                mutil_req_iter = HTTPListRequest.__mutil_req__(self.project_name, method, mutil, crawler, cpath=cpath)
 
                 for mutil_req, cursor in mutil_req_iter:
 
@@ -49,11 +52,11 @@ class HTTPListRequest(object):
                                 total = re.findall(compiles['total'], etree.tostring(res.xpath(crawler['total'])[0].decode('utf-8')))[0]
                             else:
                                 total = res.xpath(crawler['total'])[0].xpath('./text()')[0]
-                            print("totaldebug:{}".format(total))
+                            self.info("Show total pages =>", total=total)
                         except IndexError:
                             total = 0 
                         except Exception as e:
-                            print('ERR: total {}'.format(e))
+                            self.error('Total break Error', err=e)
                         finally:                    
                             yield res
 
@@ -65,7 +68,7 @@ class HTTPListRequest(object):
                     
         else:
         
-            mutil_req_iter = HTTPListRequest.__mutil_req__(method, mutil, crawler)
+            mutil_req_iter = HTTPListRequest.__mutil_req__(self.project_name, method, mutil, crawler)
 
             for mutil_req, cursor in mutil_req_iter:
 
@@ -80,9 +83,9 @@ class HTTPListRequest(object):
                         try:
                             res = etree.HTML(res[0].decode('utf-8'))
                             total = res.xpath(crawler['total'])[0].xpath('./text()')[0]
-                            print("totaldebug:{}".format(total))
+                            self.info("Show total pages =>", total=total)
                         except Exception as e:
-                            print('ERR: total {}'.format(e))
+                            self.error('Total break Error', err=e)
 
                         yield res
                     
@@ -91,7 +94,7 @@ class HTTPListRequest(object):
 
 
     @staticmethod
-    def __mutil_req__(method, mutil, crawler, **kwargs):
+    def __mutil_req__(project_name, method, mutil, crawler, **kwargs):
         '''__mutil_req__
         req with different config.
         '''
@@ -114,16 +117,16 @@ class HTTPListRequest(object):
             data_key   = json.loads(crawler['data_key'])
 
         if method == 1:
-            yield from HTTPListRequest.__req_get_api__(mutil, url_tpl, params)
+            yield from HTTPListRequest.__req_get_api__(project_name, mutil, url_tpl, params)
 
         elif method == 2:
-            yield from HTTPListRequest.__req_get_web__(mutil, url_tpl, cpath, pageshow)
+            yield from HTTPListRequest.__req_get_web__(project_name, mutil, url_tpl, cpath, pageshow)
         
         elif method == 3:
-            yield from HTTPListRequest.__req_post_api__(mutil, url_tpl, data, data_key)
+            yield from HTTPListRequest.__req_post_api__(project_name, mutil, url_tpl, data, data_key)
 
     @staticmethod
-    def __req_get_api__(mutil, url_tpl, params):
+    def __req_get_api__(project_name, mutil, url_tpl, params):
         '''__req_get_api__
         method = 1
         '''
@@ -136,12 +139,12 @@ class HTTPListRequest(object):
                 url_list.append(url_tpl.format(idx+idxx*params))
 
             idx += params * mutil 
-            yield ProxiesRequests(url_list), idx
+            yield ProxiesRequests(url_list, project_name), idx
             
             
 
     @staticmethod
-    def __req_get_web__(mutil, url_tpl, cpath, pageshow):
+    def __req_get_web__(project_name, mutil, url_tpl, cpath, pageshow):
         '''__req_get_web__
         method = 2
         '''
@@ -155,12 +158,12 @@ class HTTPListRequest(object):
                 url_list.append(url_tpl.format(cpath, idx+idxx))
 
             idx += mutil
-            yield ProxiesRequests(url_list), idx*pageshow
+            yield ProxiesRequests(url_list, project_name), idx*pageshow
 
             
 
     @staticmethod
-    def __req_post_api__(mutil, url_tpl, data, data_key):
+    def __req_post_api__(project_name, mutil, url_tpl, data, data_key):
         '''__req_post_api__
         method = 3
         '''
@@ -175,22 +178,24 @@ class HTTPListRequest(object):
                 data[data_key] = idx+idxx
                 data_list.append(data)
             idx += 1
-            yield ProxiesRequests(url_list, data_list=data_list), idx
+            yield ProxiesRequests(url_list, project_name, data_list=data_list), idx
 
 
-class HTTPDetailRequest(object):
+class HTTPDetailRequest(LogBase):
 
-    def __init__(self, rds, crawler_conf):
-        self.rds = rds
-        self.crawler_conf = crawler_conf
-        self.sys          = crawler_conf['sys_conf']
+    def __init__(self, rds, crawler_conf, project_name="sample"):
+        LogBase.__init__(self, project_name, "ReqDetail")
+        self.project_name   = project_name
+        self.rds            = rds
+        self.crawler_conf   = crawler_conf
+        self.sys            = crawler_conf['sys_conf']
 
     @property
     def detail_res_iter(self):
         '''detail_res_iter
         '''
         for urls, task, idxx_list in self.__detail_task__:
-            mutil_req = ProxiesRequests(urls)
+            mutil_req = ProxiesRequests(urls, self.project_name)
             if "headers" in self.sys.keys():
                 mutil_req.add_headers(json.loads(self.sys['headers']))
             res_list = mutil_req.req_content_list
@@ -246,6 +251,7 @@ class HTTPDetailRequest(object):
         url_tpl_dict    = dict()
         rds_kv_list     = list()
         flag            = True
+        logger          = LogBase(self.project_name, "proxy")
 
         rds_data_iter = self.__show_all_in_redis__
 
@@ -267,7 +273,7 @@ class HTTPDetailRequest(object):
                 rds_kv_list.append(rds_kv)
             
             except Exception:
-                print("Iter is over.")
+                self.info("Iter is over, exit...")
                 flag = False
 
             finally:
@@ -279,7 +285,7 @@ class HTTPDetailRequest(object):
 
                     if len(url_tpl_dict[str(idx)]) >= mutil or flag == False:
 
-                        req = ProxiesRequests(url_tpl_dict['0'], need_cookies=True)
+                        req = ProxiesRequests(url_tpl_dict['0'], self.project_name, need_cookies=True)
                         if "headers" in self.sys.keys():
                             req.add_headers(json.loads(self.sys['headers']))
                         
@@ -296,7 +302,7 @@ class HTTPDetailRequest(object):
                             if k == '0':
                                 continue
                             idxx += 1
-                            extra_req = ProxiesRequests(url_tpl_dict[k])
+                            extra_req = ProxiesRequests(url_tpl_dict[k], self.project_name)
 
                             if 'cookies_key' in self.sys.keys():
                                 q_cookies[self.sys['cookies_key']] = cookies[self.sys['cookies_key']]

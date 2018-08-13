@@ -11,9 +11,10 @@ import re
 from os import remove, walk
 from lxml import etree
 
-class ParserDetail(object):
+class ParserDetail(LogBase):
 
-    def __init__(self, crawler_name, detail_res_iter, crawler_conf, rds):
+    def __init__(self, project_name, crawler_name, detail_res_iter, crawler_conf, rds):
+        LogBase.__init__(self, project_name, "parser_detail")
         self.detail_res_iter = detail_res_iter
         self.crawler_conf    = crawler_conf
         self.crawler_name    = crawler_name
@@ -22,6 +23,7 @@ class ParserDetail(object):
         self.mutil           = int(REQUEST_CFG['mutil'])
         self.task_dict       = dict()
         self.task_dict_dtl   = dict()
+        self.project_name    = project_name
 
     @property
     def save(self):
@@ -51,14 +53,15 @@ class ParserDetail(object):
                             else:
                                 rtn_data[k] = xml_data.xpath(v)[0].xpath('./text()')[0].strip()
                         except Exception as e:
-                            print("Err: {}".format(e))
+                            self.error("Parser by lxml failed.", err=e)
 
                     try:
                         self.task_dict = dict(
                             {rtn_key:rtn_data}, **self.task_dict
                         )
                     except Exception as e:
-                        print(e)
+                        self.error("Parser web page failed.", err=e)
+
                     self.rds.__update_dict_to_redis__(rtn_key, rtn_data)
                     
                 # Request by HTTP Api.
@@ -76,13 +79,13 @@ class ParserDetail(object):
                                 {rtn_key:rtn_data}, **self.task_dict
                             )
                         except Exception as e:
-                            print(e)
+                            self.error("Parser by json failed.", err=e)
                             
                         if len(self.task_dict.items()) == 0:
                             self.rds.__update_dict_to_redis__(rtn_key, rtn_data)
                             
                     except Exception as e:
-                        print("Parse Detail Error! Err:{} Result:{}".format(e, res))
+                        self.error("Parse Detail Error!", err=e, res=res)
                     finally:
                         parser['data_path'] = '.'.join(find_data)
                         rtn_data = dict()
@@ -122,9 +125,9 @@ class ParserDetail(object):
                         
             t_list.append(
                 loop.run_in_executor(
-                    None, eval, *("{}_extra({}, {})".format(
+                    None, eval, *("{}_extra({!r}, {}, {})".format(
                         # Use inner func eval to call function with string.
-                        self.crawler_name, k, v
+                        self.crawler_name, self.project_name, k, v
                     ), globals())
                 )
             )

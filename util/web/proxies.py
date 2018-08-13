@@ -13,6 +13,8 @@ from gevent import monkey; monkey.patch_all()
 from constant.config import conf_kv_func
 import asyncio
 
+from util.common.logger import LogBase
+
 # 代理 用户验证部分 - 一天检查一次，所以多次调用时不重复此步骤
 class ProxiesHeaders():
     '''
@@ -41,14 +43,15 @@ class ProxiesHeaders():
         timestamp = self.__timestamp
         return auth, timestamp
 
-class ProxiesRequests(ProxiesHeaders):
+class ProxiesRequests(ProxiesHeaders, LogBase):
     '''
     通过端口转发发起请求
     这里发起的请求应当是一个待请求的 列表
 
     '''
-    def __init__(self, urls=[], **kwargs):
+    def __init__(self, urls=[], project_name="sample", **kwargs):
         ProxiesHeaders.__init__(self)
+        LogBase.__init__(self, project_name, "proxy")
         self._urls          = urls
         self._method        = 'GET'
         self._need_cookies  = False
@@ -84,7 +87,7 @@ class ProxiesRequests(ProxiesHeaders):
     def _proxy_content_singal_(self, url, *args):
         '''发起单个的代理请求 可被继承'''
 
-        print("start request", url, *args)
+        self.info("start request", url=url, args=args)
 
         # 去除代理不安全的警告 - InsecureRequestWarning
         import requests
@@ -96,7 +99,7 @@ class ProxiesRequests(ProxiesHeaders):
             idx += 1
             if idx > 10:
                 self._single_content = b"{}"
-                print("BAD REQUEST")
+                self.error("BAD REQUEST =>", url=url)
                 break
 
             try:
@@ -106,23 +109,21 @@ class ProxiesRequests(ProxiesHeaders):
                 else:
                     req = requests.post(url, headers=self._headers, cookies=self._cookies, proxies=self._proxy, allow_redirects=False, timeout=2, verify=False, data=args[0])#
                 req_content = req.content
-
-                # print("&&&&", req_content)
                 
                 if str(req_content).find("Concurrent number exceeds limit") != -1 or str(req_content) == "b''":
                     # 端口转发太频繁 重新发起请求
                     # 针对安居客 返回数据为空 重新发起请求
-                    print("Request too fast, continue...")
+                    self.warn("Request too fast, continue...")
                     time.sleep(0.5)
                     continue
 
                 if str(req_content).find("The number of requests exceeds the limit") != -1:
                     # 代理需要续费
-                    print("[ERR] Exceed the limit, STOP!")
+                    self.fatal("Exceed the limit, STOP!!!")
                     break
 
                 if str(req_content).find("Bad Gateway") != -1 or str(req_content).find("The requested URL could not be retrieved") != -1:
-                    print("Get bad gateway, continue...")
+                    self.warn("Get bad gateway, continue...")
                     time.sleep(0.5)
                     continue
                     
@@ -131,8 +132,8 @@ class ProxiesRequests(ProxiesHeaders):
                 break
 
             except Exception as e:
-                # req_warn("请求失败！正在重新发起... %s"%str(e))
-                print('Request Err {}'.format(e))
+                self.warn('Proxy Request timeout, continue...')
+                self.debug('Proxy Err', err=e)
                 time.sleep(0.5)
                 continue
 
@@ -150,16 +151,17 @@ class ProxiesRequests(ProxiesHeaders):
 
     @property
     def req_content_list(self):
-        # req_info("开始发起%d条请求..."%(len(self._urls)))
+
+        self.info("Start proxy request =>", length=len(self._urls))
         self._batch_request_
-        # req_info("请求发送完成！")
+        self.info("Proxy request finished.")
         for url in self._urls:
             self._content.append((self._content_dict[url], url))
         if self._need_cookies:
             return self._content, self._resp_cookies
         else:
             return self._content
-
+        
     def add_headers(self, headers):
         '''特殊的网页请求可以添加Headers'''
         self._headers = dict(self._headers, **headers)
@@ -175,13 +177,13 @@ class ProxiesRequests(ProxiesHeaders):
 class ProxiesVaild(ProxiesRequests):
     '''测试代理代码'''
 
-    def __init__(self, num=1):
-        raw_url = conf_kv_func("sys.proxy", "raw_url")
-        
+    def __init__(self, num=1, project_name="test"):
+        raw_url = conf_kv_func("sys.proxy", "raw_url")        
         self.vaild_urls = [raw_url] * num
-        print(self.vaild_urls)
         self.ip_infos = []
-        ProxiesRequests.__init__(self, self.vaild_urls)
+        ProxiesRequests.__init__(self, self.vaild_urls, project_name)
+        self.info("Here is debug urls =>",urls=self.vaild_urls)
+
         
     def _get_ip_info_(self, content):
         '''从网页中获取IP信息'''
@@ -192,7 +194,7 @@ class ProxiesVaild(ProxiesRequests):
             ip_info = ip_info[0]
             return ip_info
         except Exception as e:
-            # req_err("未有匹配 %s %s %s"%(str(e)," content: ", content))
+            self.err("未有匹配 %s %s %s"%(str(e)," content: ", content))
             return
 
     @property
