@@ -39,8 +39,8 @@ class Do(object):
         Start Process from here.
         '''
         print("Process 1 Start")
-        # self.list_res_iter      = self.__req_list__
-        # self.__parser_list__
+        self.list_res_iter      = self.__req_list__
+        self.__parser_list__
 
         print("Process 2 Start")
         self.detail_res_iter    = self.__req_detail__
@@ -56,7 +56,7 @@ class Do(object):
         self.crawler_conf = CrawlerConfigReader.crawler_config(self.crawler_name)
         self.rds          = RedisController(int(self.crawler_conf['sys_conf']['redis_db']))
         self.rds_key      = self.crawler_conf['sys_conf']['redis_key']
-        print("Here is crawler config ...", self.crawler_conf)
+        print("Here is crawler config ...\n*******\n{}\n*******\n".format(self.crawler_conf))
 
     @property
     def __req_list__(self):
