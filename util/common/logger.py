@@ -4,74 +4,108 @@
 
 import logging
 import sys
-from .date import Time
+from date import Time
+import os
 
 class log_base(object):
-    """日志服务
+    """Log base service
 
     """
-    def __init__(self,logger_name):
-        logger = logging.getLogger(logger_name)
-        formater = logging.Formatter('PID:%(process)-5s %(asctime)s [%(name)s] \t%(message)s', '%Y/%m/%d %H:%M:%S')
-        file_handler = logging.FileHandler("./log/spider_all_{date}.log".format(date=Time.now_date_str()))
+    def __init__(self, project_name, logger_name):
+        '''class log_base
+        params:
+            project_name
+            logger_name
+        '''
+        logger = logging.getLogger(project_name)
+        formater = logging.Formatter(
+            'P:%(process)-5s T:%(threadName)s %(asctime)s [%(name)s] \t%(message)s',
+            r'%Y/%m/%d %H:%M:%S'
+        )
+
+        LOG_BASE_PATH = "./log"
+        LOG_PJT_PATH  = "./log/%s/"%project_name
+
+        if not os.path.exists(LOG_BASE_PATH):
+            os.mkdir(LOG_BASE_PATH)
+            
+        if not os.path.exists(LOG_PJT_PATH):
+            os.mkdir(LOG_PJT_PATH)
+            
+        file_handler = logging.FileHandler(
+            "{log_path}{date}.log".format(
+                log_path=LOG_PJT_PATH, date=Time.now_date_str()
+            )
+        )
         file_handler.setFormatter(formater)
-        stream_handler = logging.StreamHandler(sys.stderr)
+        # stream_handler = logging.StreamHandler(sys.stderr)
+        
         logger.addHandler(file_handler)
-        logger.addHandler(stream_handler)
+        # logger.addHandler(stream_handler)
         logger.setLevel(logging.INFO)
+    
         self.logger = logger
 
-    def err(self, log):
-        self.logger.error("[ERR] %s"%log)
-
-    def info(self, log):
-        self.logger.info("[INF] %s"%log)
-
-    def fatal(self, log):
-        self.logger.fatal("[FTL] %s"%log)
-
-    def warning(self, log):
-        self.logger.warning("[WRN] %s"%log)
-
-    def debug(self, log):
-        self.logger.debug("[DBG] %s"%log)
-
-
-def use_logger(level):
-    '''使用日志的装饰器
-    '''
-    def decorator(func):
-        logger = log_base(func.__name__)
-        def _func(*args, **kwargs):
-            '''使用本装饰器的函数要求为日志输出函数 同时要求函数的第一个参数是需要输出的日志'''
-            
-            if level == "info":
-                logger.info(args[0])
-            elif level == "debug":
-                logger.debug(args[0])
-            elif level == "warn":
-                logger.warning(args[0])
-            elif level == "err":
-                logger.err(args[0])
-            elif level == "fatal":
-                logger.fatal(args[0])
-            return func(*args)
-
-        return _func
+    def debug(self, msg, **kwargs):
+        self.logger.error(
+            "[DBG] %s %s"%(
+                msg, "\t".join(["{}:{}".format(k, v) for k, v in kwargs.items()])
+            )
+        )
         
-    return decorator
+    def info(self, msg, **kwargs):
+        self.logger.error(
+            "[INF] %s %s"%(
+                msg, "\t".join(["{}:{}".format(k, v) for k, v in kwargs.items()])
+            )
+        )
 
-# 测试代码
-@use_logger(level="err")
-def foo(msg):
-    print("将会打印日志 %s"%msg)
+    def warning(self, msg, **kwargs):
+        self.logger.error(
+            "[WRN] %s %s"%(
+                msg, "\t".join(["{}:{}".format(k, v) for k, v in kwargs.items()])
+            )
+        )
+    def error(self, msg, **kwargs):
+        self.logger.error(
+            "[ERR] %s %s"%(
+                msg, "\t".join(["{}:{}".format(k, v) for k, v in kwargs.items()])
+            )
+        )
+    def fatal(self, msg, **kwargs):
+        self.logger.error(
+            "[FTL] %s %s"%(
+                msg, "\t".join(["{}:{}".format(k, v) for k, v in kwargs.items()])
+            )
+        )
 
-@use_logger(level="info")
-def fo(msg):
-    print("将会打印日志 %s"%msg)
+    def dbg(self, msg, **kwargs):
+        "rename debug"
+        self.debug(msg, **kwargs)
 
-if __name__ == "__main__":
-    for i in range(1, 10):
-        foo("This is %d test"%i)
-    for i in range(1, 10):
-        fo("This is %d info test"%i)
+    def inf(self, msg, **kwargs):
+        "rename info"
+        self.info(msg, **kwargs)
+
+    def wrn(self, msg, **kwargs):
+        "rename warning"
+        self.warning(msg, **kwargs)
+
+    def warn(self, msg, **kwargs):
+        "rename warning"
+        self.warning(msg, **kwargs)
+
+    def err(self, msg, **kwargs):
+        "rename error"
+        self.error(msg, **kwargs)
+
+    def ftl(self, msg, **kwargs):
+        "rename fatal"
+        self.fatal(msg, **kwargs)
+
+# Test Code
+qk_logger = log_base("qk_crawler", "redis")
+qk_logger.err("Connect to redis failed.")
+
+lj_logger = log_base("lj_crawler", "database")
+lj_logger.err("Connect Database succeed.", ip="127.0.0.1", port=3306)
