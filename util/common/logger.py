@@ -4,10 +4,10 @@
 
 import logging
 import sys
-from date import Time
+from .date import Time
 import os
 
-class log_base(object):
+class LogBase(object):
     """Log base service
 
     """
@@ -17,7 +17,7 @@ class log_base(object):
             project_name
             logger_name
         '''
-        logger = logging.getLogger(project_name)
+        logger = logging.getLogger(logger_name)
         formater = logging.Formatter(
             'P:%(process)-5s T:%(threadName)s %(asctime)s [%(name)s] \t%(message)s',
             r'%Y/%m/%d %H:%M:%S'
@@ -38,44 +38,44 @@ class log_base(object):
             )
         )
         file_handler.setFormatter(formater)
-        # stream_handler = logging.StreamHandler(sys.stderr)
+        stream_handler = logging.StreamHandler(sys.stderr)
         
         logger.addHandler(file_handler)
-        # logger.addHandler(stream_handler)
+        logger.addHandler(stream_handler)
         logger.setLevel(logging.INFO)
     
         self.logger = logger
 
     def debug(self, msg, **kwargs):
-        self.logger.error(
+        self.logger.debug(
             "[DBG] %s %s"%(
-                msg, "\t".join(["{}:{}".format(k, v) for k, v in kwargs.items()])
+                msg, " ".join(["{}:{}".format(k, v) for k, v in kwargs.items()])
             )
         )
         
     def info(self, msg, **kwargs):
-        self.logger.error(
+        self.logger.info(
             "[INF] %s %s"%(
-                msg, "\t".join(["{}:{}".format(k, v) for k, v in kwargs.items()])
+                msg, " ".join(["{}:{}".format(k, v) for k, v in kwargs.items()])
             )
         )
 
     def warning(self, msg, **kwargs):
-        self.logger.error(
+        self.logger.warning(
             "[WRN] %s %s"%(
-                msg, "\t".join(["{}:{}".format(k, v) for k, v in kwargs.items()])
+                msg, " ".join(["{}:{}".format(k, v) for k, v in kwargs.items()])
             )
         )
     def error(self, msg, **kwargs):
-        self.logger.error(
+        self.logger.err(
             "[ERR] %s %s"%(
-                msg, "\t".join(["{}:{}".format(k, v) for k, v in kwargs.items()])
+                msg, " ".join(["{}:{}".format(k, v) for k, v in kwargs.items()])
             )
         )
     def fatal(self, msg, **kwargs):
-        self.logger.error(
+        self.logger.fatal(
             "[FTL] %s %s"%(
-                msg, "\t".join(["{}:{}".format(k, v) for k, v in kwargs.items()])
+                msg, " ".join(["{}:{}".format(k, v) for k, v in kwargs.items()])
             )
         )
 
@@ -102,10 +102,3 @@ class log_base(object):
     def ftl(self, msg, **kwargs):
         "rename fatal"
         self.fatal(msg, **kwargs)
-
-# Test Code
-qk_logger = log_base("qk_crawler", "redis")
-qk_logger.err("Connect to redis failed.")
-
-lj_logger = log_base("lj_crawler", "database")
-lj_logger.err("Connect Database succeed.", ip="127.0.0.1", port=3306)

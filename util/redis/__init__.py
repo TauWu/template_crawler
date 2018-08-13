@@ -4,6 +4,7 @@ from redis import Redis, ConnectionPool
 import json
 from util.config import ConfigReader
 from constant.config import REDIS_CFG
+from util.common.logger import LogBase
 
 def equal(object1, object2):
     if object1 == object2:
@@ -12,14 +13,16 @@ def equal(object1, object2):
         return False
 
 
-class RedisController():
+class RedisController(LogBase):
         
-    def __init__(self, db):
+    def __init__(self, db, project_name="sample"):
+        LogBase.__init__(self, project_name, "redis")
+
         host, port = REDIS_CFG['host'], REDIS_CFG['port']
         self.db = db
         self.__pool__ = ConnectionPool(host=host, port=port, db=self.db)
         self._redis_conn = Redis(connection_pool=self.__pool__)
-        print("Redis连接创建成功！[%s:%s db%s]"%(host, port, self.db))
+        self.info("Connect to redis-server SUCCEED.", host=host, port=port, db=self.db)
 
     def rset(self, key, value):
         rvalue = self.rget(key)
@@ -30,11 +33,11 @@ class RedisController():
                 pass
 
         if equal(value, rvalue):
-            print("db{}:set【{} => <=】".format(self.db, key))
+            self.info("db{}:set【{} => <=】".format(self.db, key))
         elif rvalue == None:
-            print("db{}:set【{} () => {}】".format(self.db, key, value))
+            self.info("db{}:set【{} () => {}】".format(self.db, key, value))
         else:
-            print("db{}:set【{} {} => {}】".format(self.db, key, rvalue, value))
+            self.info("db{}:set【{} {} => {}】".format(self.db, key, rvalue, value))
         
         if isinstance(value, dict):
             value = json.dumps(value)
@@ -49,12 +52,12 @@ class RedisController():
             else:
                 return None
         except Exception as e:
-            print(str(e))
+            self.error("Get value from redis error!", key=key, err=e)
             return None
 
     def rdel(self, key):
         self._redis_conn.delete(key)
-        print("db%s:删除【%s】的缓存"%(self.db,key))
+        self.info("db%s:删除【%s】的缓存"%(self.db,key))
 
     @property
     def dbsize(self):
@@ -88,7 +91,7 @@ class RedisController():
                 bf_val = dict(bf_val, **v)
                 self.rset(k, bf_val)
             except Exception as e:
-                print("__update_dict_to_redis__ failed. {}".format(e))
+                self.warn("__update_dict_to_redis__ failed.",err=e)
                 pass
         else:
             self.rset(k, v)

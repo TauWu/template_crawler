@@ -4,16 +4,20 @@ from module.config.etl import ETLConfigReader
 from module.redis.scan import RedisScanner
 from module.database.db_opter import DBOpter
 from constant.config import BD_MAP_CFG
+from util.common.logger import LogBase
 
 import json
 import re
 
-class Do(object):
+class Do(LogBase):
 
     def __init__(self, etl_name):
+        project_name            = "etl_%s"%etl_name
+        LogBase.__init__(self, project_name, "main")
+
         self.etl_name           = etl_name
         self.etl_conf           = ETLConfigReader.etl_config(etl_name)
-        self.rds_data_iter      = RedisScanner.rds_data_iter(self.etl_conf["sys_conf"]["redis_db"])
+        self.rds_data_iter      = RedisScanner.rds_data_iter(self.etl_conf["sys_conf"]["redis_db"], project_name)
         self.community_tbname   = "community_info"
         self.community_tbkeys   = [
             'community_id', 'source_from', 'source_name', 'community_name',
@@ -21,10 +25,13 @@ class Do(object):
             'bd_city', 'bd_district', 'bd_busi', 'bd_street', 'bd_detail', 'bd_adcode'
         ]
         self.community_dict     = dict()
-        self.db                 = DBOpter()
+        self.db                 = DBOpter(project_name)
+        
 
     def do(self):
-        print(self.etl_conf)
+        
+        self.info("ETL Project start.")
+        self.debug("Here is the conf.", **self.etl_conf["sys_conf"])
 
         if self.etl_name == "lianjia":
             self.base_tbname = "house_base_infolj"
@@ -34,15 +41,17 @@ class Do(object):
                 'sale_date', 'sale_date_new', 'see_count', 'see_stat_total',
                 'see_stat_weekly', 'house_title'
             ]
+
             self.etl_lianjia()
 
         elif self.etl_name == "ziroom":
-            self.community_id_list = list()
-            self.base_tbname = "house_base_infozr"
-            self.base_tbkeys = [
+            self.community_id_list  = list()
+            self.base_tbname        = "house_base_infozr"
+            self.base_tbkeys        = [
                 'house_id', 'community_id', 'price',
                 'house_type', 'floor', 'status', 'house_code'
             ]
+            
             self.etl_ziroom()
         
         elif self.etl_name == "qk":
@@ -183,13 +192,15 @@ class Do(object):
         Ziroom transformer.
         '''
 
-        self.db.db.execute(
+        self.db.execute(
             "select max(cast(community_id as unsigned integer)) as max from community_info where source_from = 2 and enabled = 1"
         )
-        data = self.db.db.cur.fetchone()
+        data = self.db.cur.fetchone()
         max_id = data["max"]
         if max_id is None:
             max_id = 0
+            
+        self.info("The max_id in community table for ziroom =>", max=max_id)
 
         def get_community(data_dict):
             '''get_community
@@ -198,16 +209,18 @@ class Do(object):
 
             try:
 
-                self.db.db.execute(
+                self.db.execute(
                     "select community_id from community_info where source_from = 2 and lat = {lat} and lng = {lng} and enabled = 1".format(
                         lat=data_dict['lat'], lng=data_dict['lng']
                     )
                 )
 
-                data = self.db.db.cur.fetchone()
+                data = self.db.cur.fetchone()
                 community_id = data["community_id"]
+                self.debug("Find community_id for ziroom in table SECCEED.",community_id=community_id, lat=data_dict['lat'], lng=data_dict['lng'])
 
             except Exception:
+                self.warning("No community_id for ziroom in table equals this lat and lng.", lat=data_dict['lat'], lng=data_dict['lng'])
 
                 try:
 
@@ -217,9 +230,11 @@ class Do(object):
                     community_id = max_id + 1 + self.community_id_list.index(posi)
                     
                 except Exception as e:
+                    self.error("No lat or lng is supported.", err=e)
                     return data_dict
             
             data_dict["community_id"] = community_id
+            self.debug("Get community_id for ziroom house info.", community_id=community_id, lat=data_dict['lat'], lng=data_dict['lng'])
             return data_dict
 
         # Load data from redis to transformer.
@@ -338,11 +353,8 @@ class Do(object):
     def __l_qk__(self, t_data):
 
         for data in t_data:
-            
             self.db.update_data(self.community_tbname, data, self.community_tbkeys, community_id=data['community_id'])
             self.db.update_data(self.base_tbname, data, self.base_tbkeys, house_id=data['house_id'])
-
-            # a = input("DEBUG")
 
 
 ######################### BAIDU MAP #########################
@@ -357,11 +369,14 @@ class Do(object):
             return data
 
         if lat is None or lng is None:
+            self.warn("No lat or lng to request BD MAP.", community_id=community_id, lat=lat, lng=lng)
             return dict()
         
-        try:
+        if community_id in self.community_dict.keys():
+            self.debug("Get BD Map info from hash map.", community_id=community_id, lat=lat, lng=lng)
             return self.community_dict[community_id]
-        except Exception:
+            
+        else:
             url_tpl = "http://api.map.baidu.com/geocoder/v2/?location={lat},{lng}&output=json&pois=1&ak={ak}"
             url = url_tpl.format(lat=lat, lng=lng, ak=BD_MAP_CFG["ak"])
             
@@ -382,6 +397,10 @@ class Do(object):
                 bd_data = bd_data["result"]
                 for kv in bd_kv.items():
                     bd_data_dict[kv[0]] = get_k_tree(bd_data, kv[1])
+            else:
+                self.err("Get BD Map info FAILED.", lat=lat, lng=lng, rtn=bd_data)
             
+            self.debug("Get BD Map info SUCCEED.", lat=lat, lng=lng, **bd_data_dict)
+
             self.community_dict[community_id] = bd_data_dict
             return bd_data_dict

@@ -6,27 +6,28 @@ NO_DATA         = 0
 DATA_CHANGE     = 1
 DATA_EQUAL      = 2
 
-class DBOpter(object):
+class DBOpter(DBController):
 
-    def __init__(self):
-        self.db = DBController()
+    def __init__(self, project_name):
+        DBController.__init__(self, project_name)
 
     def update_data(self, tb_name, data, use, **kwargs):
         data_status = self.sql_is_equal(tb_name, data, use, **kwargs)
         sql = self.sql_maker_insert(tb_name, data, use=use)
 
         if data_status == NO_DATA:
-            print("NO_DATA insert.")
-            print(sql)
+            self.info("NO_DATA, insert =>", **kwargs)
+            self.debug(sql)
+            
             try:
-                self.db.execute(sql)
+                self.execute(sql)
             except Exception:
-                self.db._conn.rollback()
+                self._conn.rollback()
             else:
-                self.db._conn.commit()
+                self._conn.commit()
 
         elif data_status == DATA_CHANGE:
-            print("DATA_CHANGE update.")
+            self.info("DATA_CHANGE, update＝>", **kwargs)
             kv_list = list()
 
             for kv in kwargs.items():
@@ -36,18 +37,18 @@ class DBOpter(object):
                 tb_name=tb_name, kv_val=" and ".join(kv_list)
             )
 
-            print(sql, '\n', sql_update)
+            self.debug("debug sql and sql_update", sql=sql, sql_update=sql_update)
 
             try:
-                self.db.execute(sql_update)
-                self.db.execute(sql)
+                self.execute(sql_update)
+                self.execute(sql)
             except Exception:
-                self.db._conn.rollback()
+                self._conn.rollback()
             else:
-                self.db._conn.commit()
+                self._conn.commit()
             
         elif data_status == DATA_EQUAL:
-            print("DATA_EQUAL pass.")
+            self.info("DATA_EQUAL, pass =>", **kwargs)
 
     def sql_maker_insert(self, tb_name, data, **kwargs):
         '''sql_maker_insert
@@ -84,9 +85,9 @@ class DBOpter(object):
                 tb_name=tb_name, kv_val=" and ".join(kv_list)
             )
             
-            self.db.execute(sql)
+            self.execute(sql)
 
-            if self.db.cur.fetchone()['count'] > 0:
+            if self.cur.fetchone()['count'] > 0:
                 return True
             else:
                 return False
@@ -106,14 +107,12 @@ class DBOpter(object):
                 col_name=", ".join([k for k in data.keys() if k in use])
             )
             
-            self.db.execute(sql)
+            self.execute(sql)
 
-            res = self.db.cur.fetchone()
+            res = self.cur.fetchone()
 
             res = {k:v for k, v in zip(res.keys(), res.values())}
             res1 = {k:v for k, v in zip(data.keys(), data.values()) if (v is not None and k in use)}
-
-            # print("****\n{}\n{}\n{}\n".format(res, use, res1))
 
             for kv in res1.items():
 
