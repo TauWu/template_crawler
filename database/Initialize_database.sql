@@ -35,7 +35,8 @@ CREATE TABLE `house_base_infolj` (
   `modify_by`   varchar(100) NOT NULL DEFAULT '' COMMENT '修改人',
   `modify_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最近修改时间',
 
-  PRIMARY KEY (`house_info_id`)
+  PRIMARY KEY (`house_info_id`),
+  INDEX (`community_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='HOUSE_BASE_INFOLJ';
 
 -- Create table for saving Qingke house base info.
@@ -56,7 +57,8 @@ CREATE TABLE `house_base_infoqk` (
   `modify_by`   varchar(100) NOT NULL DEFAULT '' COMMENT '修改人',
   `modify_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最近修改时间',
   
-  PRIMARY KEY (`house_info_id`)
+  PRIMARY KEY (`house_info_id`),
+  INDEX (`community_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='HOUSE_BASE_INFOQK';
 
 -- Create table for saving Ziroom house base info.
@@ -78,7 +80,8 @@ CREATE TABLE `house_base_infozr` (
   `modify_by`   varchar(100) NOT NULL DEFAULT '' COMMENT '修改人',
   `modify_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最近修改时间',
   
-  PRIMARY KEY (`house_info_id`)
+  PRIMARY KEY (`house_info_id`),
+  INDEX (`community_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='HOUSE_BASE_INFOZR';
 
 -- Create table for saving community base info.
@@ -112,7 +115,8 @@ CREATE TABLE `community_info` (
   `modify_by`   varchar(100) NOT NULL DEFAULT '' COMMENT '修改人',
   `modify_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最近修改时间',
 
-  PRIMARY KEY (`community_info_id`, `source_from`)
+  PRIMARY KEY (`community_info_id`, `source_from`),
+  INDEX (`community_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='COMMUNITY_INFO';
 
 -- Create table for saving Ziroom price info with different payments.
