@@ -230,7 +230,7 @@ class Do(LogBase):
                     community_id = max_id + 1 + self.community_id_list.index(posi)
                     
                 except Exception as e:
-                    self.error("No lat or lng is supported.", err=e)
+                    self.warn("No lat or lng is supported.", err=e)
                     return data_dict
             
             data_dict["community_id"] = community_id
@@ -283,8 +283,9 @@ class Do(LogBase):
 
     def __l_ziroom__(self, t_data):
         for data in t_data:
-            self.db.update_data(self.community_tbname, data, self.community_tbkeys, source_from=data["source_from"], lat=data['lat'], lng=data['lng'])
-            self.db.update_data(self.base_tbname, data, self.base_tbkeys, house_id=data['house_id'])
+            if data['community_id'] is not None:
+                self.db.update_data(self.community_tbname, data, self.community_tbkeys, source_from=data["source_from"], lat=data['lat'], lng=data['lng'])
+                self.db.update_data(self.base_tbname, data, self.base_tbkeys, house_id=data['house_id'])
 
 ######################### ETL QINGKE #########################
 
