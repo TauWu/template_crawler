@@ -44,8 +44,8 @@ class Do(LogBase):
         Start Process from here.
         '''
         self.info("Process 1 Start")
-        # self.list_res_iter      = self.__req_list__
-        # self.__parser_list__
+        self.list_res_iter      = self.__req_list__
+        self.__parser_list__
 
         self.info("Process 2 Start")
         self.detail_res_iter    = self.__req_detail__

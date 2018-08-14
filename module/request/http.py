@@ -251,7 +251,6 @@ class HTTPDetailRequest(LogBase):
         url_tpl_dict    = dict()
         rds_kv_list     = list()
         flag            = True
-        logger          = LogBase(self.project_name, "proxy")
 
         rds_data_iter = self.__show_all_in_redis__
 

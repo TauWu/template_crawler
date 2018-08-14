@@ -52,17 +52,15 @@ class ParserList(LogBase):
                     for data in result.xpath(v):
                         rtn_data = dict()
 
-                        try:
-                            if k in compiles.keys():
-                                rtn_data[k] = re.findall(compiles[k], etree.tostring(data).decode('utf-8'))[0]
-                            else:
-                                rtn_data[k] = data.xpath('./text()')[0].replace('\xa0\xa0', '')
-                        except Exception as e:
-                            self.error("Parser by lxml failed.", key=k, err=e)
+                        if k in compiles.keys():
+                            rtn_data[k] = re.findall(compiles[k], etree.tostring(data).decode('utf-8'))[0]
+                        else:
+                            rtn_data[k] = data.xpath('./text()')[0].replace('\xa0\xa0', '')
 
                         rtn_data_list.append(rtn_data)
 
-                    rtn_datas.append(rtn_data_list)
+                    if len(rtn_data_list) > 0:
+                        rtn_datas.append(rtn_data_list)
                 
                 for rtn in zip(*rtn_datas):
                     for items in rtn:
