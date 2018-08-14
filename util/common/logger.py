@@ -6,6 +6,7 @@ import logging
 import sys
 from .date import Time
 import os
+import traceback
 
 class LogBase(object):
     """Log base service
@@ -66,23 +67,33 @@ class LogBase(object):
         )
 
     def warning(self, msg, **kwargs):
-        self.logger.warning(
-            "[WRN] %s %s"%(
-                msg, " ".join(["{}:{}".format(k, v) for k, v in kwargs.items()])
+        if self.logger.level == logging.INFO:
+            self.logger.warning(
+                "[WRN] %s %s"%(
+                    msg, " ".join(["{}:{}".format(k, v) for k, v in kwargs.items()])
+                )
             )
-        )
+        elif self.logger.level == logging.DEBUG:
+            tb = traceback.format_exc()
+            self.logger.warning(
+                "[WRN] %s %s\n%s"%(
+                    msg, " ".join(["{}:{}".format(k, v) for k, v in kwargs.items()]), tb
+                )
+            )
         
     def error(self, msg, **kwargs):
+        tb = traceback.format_exc()
         self.logger.error(
-            "[ERR] %s %s"%(
-                msg, " ".join(["{}:{}".format(k, v) for k, v in kwargs.items()])
+            "[ERR] %s %s \n%s"%(
+                msg, " ".join(["{}:{}".format(k, v) for k, v in kwargs.items()]), tb
             )
         )
 
     def fatal(self, msg, **kwargs):
+        tb = traceback.format_exc()
         self.logger.fatal(
-            "[FTL] %s %s"%(
-                msg, " ".join(["{}:{}".format(k, v) for k, v in kwargs.items()])
+            "[FTL] %s %s\n%s"%(
+                msg, " ".join(["{}:{}".format(k, v) for k, v in kwargs.items()]), tb
             )
         )
 
