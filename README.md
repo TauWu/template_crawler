@@ -2,7 +2,7 @@
 
 ## Description
 
-Using config files to crawl web data.
+Using config files to crawl web data, and load it to database.
 
 ## Basic Info
 
@@ -35,12 +35,12 @@ Template Crawler | [@TauWu](https://github.com/TauWu/) | 2018-07-19 | Linux (Bas
 	- [x] Transform and clean data
 	- [x] Load Data and save
 
-- [ ] Log Module
-	- [ ] Log into files.
-	- [ ] log into database.
+- [x] Log Module
+	- [x] Log into files.
+	- [x] log into database.
 
-- [ ] Async Func
-	- [ ] Turn Gevent to Async Func.
+- [x] Async Func
+	- [x] Use async func to mutil-process ziroom price imgs.
 	
 ## Future TODOs
 
@@ -49,9 +49,13 @@ Template Crawler | [@TauWu](https://github.com/TauWu/) | 2018-07-19 | Linux (Bas
 - [ ] Data API
 - [ ] Price Trend Prediction
 
+## Flow Chart
+
+> TODO
+
 ## Requirements
 
-### Softwares Needs
+### Software Needs
 
 ```sh
 # Python interpreter.
@@ -104,10 +108,118 @@ For different websites, there are some methods to get its data. For instance, yo
 
 Type No. | Crawler methods
 :-: | :-:
-1 | Request HTTP APIs to get list info.
-2 | Request HTTP APIs to get detail info.
-3 | Request Web HTML to get list info.
-4 | Request Web HTML to get detail info.
+1 | `GET`  Request HTTP APIs, and parsering JSON object by json.
+2 | `GET`  Request Webpage, and parsering HTML content by lxml.
+3 | `POST` Request HTTP APIs, and parsering JSON object by json.
+
+## Code Directory Structure
+
+- [_output](https://github.com/TauWu/template_crawler#_output)
+- [_test](https://github.com/TauWu/template_crawler#_test)
+- [.vscode](https://github.com/TauWu/template_crawler#.vscode)
+- [config](https://github.com/TauWu/template_crawler#config)
+- [constant](https://github.com/TauWu/template_crawler#constant)
+- [database](https://github.com/TauWu/template_crawler#database)
+- [do](https://github.com/TauWu/template_crawler#do)
+- [log](https://github.com/TauWu/template_crawler#log)
+- [module](https://github.com/TauWu/template_crawler#module)
+- [util](https://github.com/TauWu/template_crawler#util)
+- .gitignore
+- crawler_main.py
+- etl_main.py
+- [LICENSE](https://github.com/TauWu/template_crawler#LICENSE)
+- README.md
+- start_crawler.sh
+- start_etl.sh
+- stop_all.sh
+
+### _output
+The folder to save intermedidate temporary files. For instance, xlsx files, img files.
+
+### _test
+Test code when develop or debug, this folder won't be pushed to git.
+
+### .vscode
+Visual Studio Code config files, this folder won't be pushed to git.
+
+### config
+Contains crawler, elt and sys config files here. File `sys.cfg` won't be pushed to git.
+
+### constant
+Constant value, config, dict and so on.
+
+### database
+SQL files here.
+
+### do
+Try to do it!
+- `crawler.py`
+	> Do crawler.
+- `etl.py`
+	> Do etl project.
+
+### log
+Save log files here, contains subfolders named by different projects.
+
+### module
+Contains many modules used by `do`.
+- config
+	> Read config files in `./config` and return it.
+- database
+	> Create and execute SQL string
+- parser
+	> Parse the data from request file one by one by lxml or json module, and then `save them into redis server`.
+	- detail.py
+		> Parser detail webpage or HTTP API json and `update` the dict to redis.
+	- list.py
+		> Parser list webpage or HTTP API json and `update` the dict to redis.
+	- extra.py
+		> Extra function for this crawler, for instance, ziroom's house price is showed by a picture, we should do extra for it.
+- redis
+	> Redis scanner, scanning the redis-server to get request key list.
+- request
+	> Mutil-Proxy-Request ordered list or detail url list by ProxiesRequest Module and yield the content to parser module.
+
+### util
+Contains many base tools used by `do`, `module`.
+- common
+	> Common extensions here.
+
+	- date.py
+		> Class Time and DateTime.
+
+	- logger.py
+		> Class LogBase.
+
+	- timeout.py
+		> Function set_timeout.
+
+	- tools.py
+		> Tool functions.
+
+- config
+	> Config reader and writer module.
+
+- database
+	> Database connector and executor.
+
+- redis
+	> Redis connector and executor.
+
+- web
+	> Mutil-Proxy-Request module and test.
+
+- xlsx
+	> Read and write xlsx files.
+
+## LICENSE
+
+```
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+```
+
 
 ## Tips
 
