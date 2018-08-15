@@ -42,9 +42,9 @@ Template Crawler | [@TauWu](https://github.com/TauWu/) | 2018-07-19 | Linux (Bas
 - [x] Async Func
 	- [x] Use async func to mutil-process ziroom price imgs.
 
-- [ ] Mail Monitor
-	- [ ] Package email module.
-	- [ ] Send mail when crawler finished.
+- [x] Mail Monitor
+	- [x] Package email module.
+	- [x] Send mail when crawler finished.
 	- [ ] Send mail when etl finished.
 
 ## Future TODOs
