@@ -127,7 +127,7 @@ Type No. | Crawler methods
 - .gitignore
 - crawler_main.py
 - etl_main.py
-- [LICENSE](https://github.com/TauWu/template_crawler#LICENSE)
+- [LICENSE](https://github.com/TauWu/template_crawler#license)
 - README.md
 - start_crawler.sh
 - start_etl.sh

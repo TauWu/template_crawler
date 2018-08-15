@@ -52,10 +52,13 @@ class ParserList(LogBase):
                     for data in result.xpath(v):
                         rtn_data = dict()
 
-                        if k in compiles.keys():
-                            rtn_data[k] = re.findall(compiles[k], etree.tostring(data).decode('utf-8'))[0]
-                        else:
-                            rtn_data[k] = data.xpath('./text()')[0].replace('\xa0\xa0', '')
+                        try:
+                            if k in compiles.keys():
+                                rtn_data[k] = re.findall(compiles[k], etree.tostring(data).decode('utf-8'))[0]
+                            else:
+                                rtn_data[k] = data.xpath('./text()')[0].replace('\xa0\xa0', '')
+                        except Exception as e:
+                            self.error("Parser list websites FAILED", key=k)
 
                         rtn_data_list.append(rtn_data)
 
