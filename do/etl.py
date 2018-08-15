@@ -286,6 +286,7 @@ class Do(LogBase):
             if data['community_id'] is not None:
                 self.db.update_data(self.community_tbname, data, self.community_tbkeys, source_from=data["source_from"], lat=data['lat'], lng=data['lng'])
                 self.db.update_data(self.base_tbname, data, self.base_tbkeys, house_id=data['house_id'])
+                self.db.update_data_list("house_price_infozr", data, use=["house_id", "paymentlist"], sql_key=["house_id", "period"])
 
 ######################### ETL QINGKE #########################
 

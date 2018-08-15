@@ -125,9 +125,9 @@ CREATE TABLE `house_price_infozr` (
   `price_info_id` int(11) NOT NULL AUTO_INCREMENT COMMENT '房屋付款方式ID',
   `house_id`      varchar(60) NOT NULL DEFAULT '' COMMENT '源房屋ID',
   `period`        varchar(20) NOT NULL DEFAULT '' COMMENT '付款方式',
-  `rent_fee`      decimal(18,2) NOT NULL DEFAULT 0.0 COMMENT '房屋租金',
-  `deposit_fee`   decimal(18,2) NOT NULL DEFAULT 0.0 COMMENT '押金',
-  `service_fee`   decimal(18,2) NOT NULL DEFAULT 0.0 COMMENT '服务收费',
+  `rent`      decimal(18,2) NOT NULL DEFAULT 0.0 COMMENT '房屋租金',
+  `deposit`   decimal(18,2) NOT NULL DEFAULT 0.0 COMMENT '押金',
+  `service_charge`   decimal(18,2) NOT NULL DEFAULT 0.0 COMMENT '服务收费',
 
   `enabled`     int(1) NOT NULL DEFAULT 1 COMMENT '是否删除',
   `create_by`   varchar(100) NOT NULL DEFAULT '' COMMENT '创建人',
@@ -226,8 +226,8 @@ INNER JOIN `community_info` AS `c`
 DROP VIEW IF EXISTS `v_ziroom_payment_info`;
 CREATE VIEW `v_ziroom_payment_info` AS
 SELECT 
-  `p_zr`.`period`, `p_zr`.`rent_fee`, `p_zr`.`deposit_fee`, 
-  `p_zr`.`service_fee`,
+  `p_zr`.`period`, `p_zr`.`rent`, `p_zr`.`deposit`, 
+  `p_zr`.`service_charge`,
   `v_zr`.*
 FROM `house_price_infozr` AS `p_zr`
 INNER JOIN `v_ziroom_house_info` AS `v_zr`

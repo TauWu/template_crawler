@@ -53,7 +53,7 @@ class ParserDetail(LogBase):
                             else:
                                 rtn_data[k] = xml_data.xpath(v)[0].xpath('./text()')[0].strip()
                         except Exception as e:
-                            self.error("Parser by lxml failed.", err=e)
+                            self.error("Parser by lxml failed.", err=e, key=k)
 
                     try:
                         self.task_dict = dict(
