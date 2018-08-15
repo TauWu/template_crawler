@@ -16,7 +16,6 @@ class XlsxWriter(XlsxReader):
         self._cur           = len(self.get_sheet_content_dict(self.sheetname)) + 2
 
     def __enter__(self):
-        print("*****")
         return self
 
     def __exit__(self, type, value, traceback):
