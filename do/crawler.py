@@ -5,9 +5,11 @@ from module.request.http import HTTPListRequest, HTTPDetailRequest
 from module.parser.detail import ParserDetail
 from module.parser.list import ParserList
 from module.output.rds_to_xlsx import RdsToXlsx
+from module.mail.mail import Mail
 
 from util.redis import RedisController
 from util.common.logger import LogBase
+from util.common.date import Time
 
 class Do(LogBase):
 
@@ -43,13 +45,37 @@ class Do(LogBase):
         '''do
         Start Process from here.
         '''
+        p1s = Time.ISO_time_str()
         self.info("Process 1 Start")
         self.list_res_iter      = self.__req_list__
         self.__parser_list__
-
+        p1e = Time.ISO_time_str()
+        
+        p2s = Time.ISO_time_str()
         self.info("Process 2 Start")
         self.detail_res_iter    = self.__req_detail__
         self.__parser_detail__
+        p2e = Time.ISO_time_str()
+
+        msg = None
+        sub = "Report for {} => {}".format(self.project_name, Time.ISO_date_str())
+        
+        with open("./constant/crawler_report.tpl") as r:
+            msg = r.read()
+        msg = msg.format(
+            sub=sub, p1s=p1s, p1e=p1e,
+            p2s=p2s, p2e=p2e            
+        )
+
+        attachment = {
+            "{}.log".format(
+                self.project_name
+            ):"./log/{}/{}.log".format(
+                self.project_name, Time.now_date_str()
+            )
+        }
+
+        Mail.send(msg, sub, attachment)
 
         self.info("Process End.")
 
