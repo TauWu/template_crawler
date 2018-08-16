@@ -45,7 +45,7 @@ Template Crawler | [@TauWu](https://github.com/TauWu/) | 2018-07-19 | Linux (Bas
 - [x] Mail Monitor
 	- [x] Package email module.
 	- [x] Send mail when crawler finished.
-	- [ ] Send mail when etl finished.
+	- [  ] Send mail when etl finished.
 
 ## Future TODOs
 

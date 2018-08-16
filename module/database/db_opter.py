@@ -90,7 +90,7 @@ class DBOpter(DBController):
         select_tpl      = "select count(1) as count from {tb_name} where {kv_val}"
         select_dtl_tpl  = "select {col_name} from {tb_name} where {kv_val}"
         insert_tpl      = "insert into {tb_name} ({k_val}) values ({v_val})"
-        update_tpl      = "update {tb_name} set enable = 0 where {kv_val}"
+        update_tpl      = "update {tb_name} set enabled = 0 where {kv_val}"
 
         # Get data from t(ransformer) module.
         for k, v in zip(data.keys(), data.values()):

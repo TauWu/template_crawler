@@ -5,6 +5,8 @@ from module.redis.scan import RedisScanner
 from module.database.db_opter import DBOpter
 from constant.config import BD_MAP_CFG
 from util.common.logger import LogBase
+from module.mail.mail import Mail
+from util.common.date import Time
 
 import json
 import re
@@ -13,6 +15,7 @@ class Do(LogBase):
 
     def __init__(self, etl_name):
         project_name            = "etl_%s"%etl_name
+        self.project_name       = project_name
         LogBase.__init__(self, project_name, "main")
 
         self.etl_name           = etl_name
@@ -32,6 +35,7 @@ class Do(LogBase):
         
         self.info("ETL Project start.")
         self.debug("Here is the conf.", **self.etl_conf["sys_conf"])
+        p1s = Time.ISO_time_str()
 
         if self.etl_name == "lianjia":
             self.base_tbname = "house_base_infolj"
@@ -61,6 +65,27 @@ class Do(LogBase):
                 'origin_price', 'price'
             ]
             self.etl_qk()
+
+        msg = None
+        sub = "Report for {} => {}".format(self.project_name, Time.ISO_date_str())
+        
+        p1e = Time.ISO_time_str()
+        
+        with open("./constant/etl_report.tpl") as r:
+            msg = r.read()
+        msg = msg.format(
+            sub=sub, p1s=p1s, p1e=p1e        
+        )
+
+        attachment = {
+            "{}.log".format(
+                self.project_name
+            ):"./log/{}/{}.log".format(
+                self.project_name, Time.now_date_str()
+            )
+        }
+
+        Mail.send(msg, sub, attachment)
 
     @property
     def __e_data_iter__(self):
