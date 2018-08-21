@@ -48,8 +48,12 @@ class HTTPListRequest(LogBase):
 
                         try:    
                             res = etree.HTML(res[0].decode('utf-8'))
+
+                            # with open("test.html", "w") as f:
+                            #     f.write(etree.tostring(res).decode('utf-8'))
+
                             if 'total' in compiles:
-                                total = re.findall(compiles['total'], etree.tostring(res.xpath(crawler['total'])[0].decode('utf-8')))[0]
+                                total = re.findall(compiles['total'], (etree.tostring(res.xpath(crawler['total'])[0]).decode('utf-8')))[0]
                             else:
                                 total = res.xpath(crawler['total'])[0].xpath('./text()')[0]
                             self.info("Show total pages =>", total=total)
