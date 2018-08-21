@@ -41,10 +41,8 @@ class ParserList(LogBase):
                     
         else:
             for result in self.list_res_iter:
+                
                 rtn_datas = list()
-
-                with open("test.html", "w") as f:
-                    f.write(etree.tostring(result).decode('utf-8'))
                 
                 for k, v in parser.items():
                     rtn_data_list   = list()
@@ -59,7 +57,7 @@ class ParserList(LogBase):
                                 rtn_data[k] = data.xpath('./text()')[0].replace('\xa0\xa0', '')
                         except Exception as e:
                             self.error("Parser list websites FAILED", key=k)
-
+                        
                         rtn_data_list.append(rtn_data)
 
                     if len(rtn_data_list) > 0:
@@ -74,9 +72,12 @@ class ParserList(LogBase):
 
     
     def __update_redis__(self, rtn_data):
-        if len(self.rds_key.split('.')) > 1:
-            self.rds.__update_dict_to_redis__(".".join([str(rtn_data[k]) for k in self.rds_key.split('.')]), rtn_data)
-        else:
-            self.rds.__update_dict_to_redis__(rtn_data[self.rds_key], rtn_data)
+        try:
+            if len(self.rds_key.split('.')) > 1:
+                self.rds.__update_dict_to_redis__(".".join([str(rtn_data[k]) for k in self.rds_key.split('.')]), rtn_data)
+            else:
+                self.rds.__update_dict_to_redis__(rtn_data[self.rds_key], rtn_data)
+        except Exception:
+            self.error("Data lose key, please check", rtn_data=rtn_data)
 
                 

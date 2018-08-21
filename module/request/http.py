@@ -54,7 +54,11 @@ class HTTPListRequest(LogBase):
                                 total = res.xpath(crawler['total'])[0].xpath('./text()')[0]
                             self.info("Show total pages =>", total=total)
                         except IndexError:
-                            total = 0 
+                            self.error("Total break IndexError")
+                            total = 0
+                        except UnicodeDecodeError:
+                            self.error("Total break UnicodeDecodeError")
+                            total = 99999
                         except Exception as e:
                             self.error('Total break Error', err=e)
                         finally:                    
