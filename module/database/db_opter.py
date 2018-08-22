@@ -153,7 +153,6 @@ class DBOpter(DBController):
             try:
                 if count == 0:
                     self.info("NO_DATA, insert", key=kv_val)
-                    print(insert_sql)
                     self.execute(insert_sql)
                     self._conn.commit
                 else:

@@ -20,16 +20,17 @@ def ziroom_extra(project_name, rid, rtn_data):
     logger = LogBase(project_name, "ziroom_extra")
     logger.debug("Before Extra =>", data=rtn_data)
     # Extra func for house code.
+    
     try:
-        end = rtn_data['house_code'].split('_')[1]
+        end = int(rtn_data['house_code'].split('_')[1])
+        room_num = int(findall(r"([0-9])室[0-9]厅", rtn_data['house_type'])[0])
     except Exception:
         pass
     else:
-        end = int(end)
-        if end > 1:
+        if room_num > 1:
             rds = RedisController(int(conf_kv_func("ziroom.sys_config", all=True)['redis_db']), project_name)
-            for idx in range(1, end):
-                rds.__update_dict_to_redis__(rid-idx, {"house_id":str(rid-idx)})
+            for idx in range(1, room_num+1):
+                rds.__update_dict_to_redis__(rid-end+idx, {"house_id":str(rid-end+idx)})
                 
     # Extra func for price.
     try:

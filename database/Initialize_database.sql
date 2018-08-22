@@ -36,7 +36,7 @@ CREATE TABLE `house_base_infolj` (
   `modify_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最近修改时间',
 
   PRIMARY KEY (`house_info_id`),
-  INDEX (`community_id`)
+  KEY `community_id` (`community_id`,`enabled`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='HOUSE_BASE_INFOLJ';
 
 -- Create table for saving Qingke house base info.
@@ -58,7 +58,7 @@ CREATE TABLE `house_base_infoqk` (
   `modify_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最近修改时间',
   
   PRIMARY KEY (`house_info_id`),
-  INDEX (`community_id`)
+  KEY `community_id` (`community_id`,`enabled`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='HOUSE_BASE_INFOQK';
 
 -- Create table for saving Ziroom house base info.
@@ -81,7 +81,7 @@ CREATE TABLE `house_base_infozr` (
   `modify_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最近修改时间',
   
   PRIMARY KEY (`house_info_id`),
-  INDEX (`community_id`)
+  KEY `community_id` (`house_id`,`enabled`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='HOUSE_BASE_INFOZR';
 
 -- Create table for saving community base info.
@@ -116,7 +116,8 @@ CREATE TABLE `community_info` (
   `modify_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最近修改时间',
 
   PRIMARY KEY (`community_info_id`, `source_from`),
-  INDEX (`community_id`)
+  KEY `posi` (`lat`,`lng`,`enabled`),
+  KEY `community_id` (`community_id`,`enabled`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='COMMUNITY_INFO';
 
 -- Create table for saving Ziroom price info with different payments.
@@ -135,7 +136,8 @@ CREATE TABLE `house_price_infozr` (
   `modify_by`   varchar(100) NOT NULL DEFAULT '' COMMENT '修改人',
   `modify_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最近修改时间',
 
-  PRIMARY KEY (`price_info_id`)
+  PRIMARY KEY (`price_info_id`),
+  KEY `house_payment` (`house_id`,`period`,`enabled`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='HOUSE_PRICE_INFOZR';
 
 -- Create table for saving Ziroom house recomm info.
@@ -156,7 +158,8 @@ CREATE TABLE `house_recomm_infozr` (
   `modify_by`   varchar(100) NOT NULL DEFAULT '' COMMENT '修改人',
   `modify_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最近修改时间',
 
-  PRIMARY KEY (`house_recomm_id`)
+  PRIMARY KEY (`house_recomm_id`),
+  KEY `house_recomm` (`house_id`,`enabled`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='HOUSE_RECOMM_INFOZR';
 
 -- Create table for saving log info.
@@ -213,7 +216,7 @@ CREATE VIEW `v_ziroom_house_info` AS
 SELECT 
   `zr`.`house_id`, `zr`.`price`,`zr`.`floor`, `zr`.`house_type`, 
   `zr`.`community_id`,`zr`.`enabled`, `zr`.`create_time`, 
-  `zr`.`modify_time`, `c`.`community_name`,
+  `zr`.`modify_time`, `c`.`community_name`, `zr`.`status`,
   `c`.`lat`,`c`.`lng`, `c`.`cw_district`,`c`.`cw_busi`,
   `c`.`cw_detail`, `c`.`bd_province`,`c`.`bd_city`,`c`.`bd_district`,
   `c`.`bd_busi`,`c`.`bd_street`,`c`.`bd_detail`,`c`.`bd_adcode`
