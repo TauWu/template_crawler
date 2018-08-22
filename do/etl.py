@@ -101,7 +101,6 @@ class Do(LogBase):
                 if 'house_id' not in house_data.keys():
                     self.warning("'house_id' not in house_data", house_id=house_id)
                     house_data = dict(house_data, **({"house_id":house_id}))
-                    input("debug")
                 yield house_data
             else:
                 data = data[1]
