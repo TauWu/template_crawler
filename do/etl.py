@@ -94,8 +94,18 @@ class Do(LogBase):
         '''
 
         for data in self.rds_data_iter:
-            data = data[1]
-            yield json.loads(data)
+
+            if self.etl_name == "ziroom":
+                house_id = data[0]
+                house_data = json.loads(data[1])
+                if 'house_id' not in house_data.keys():
+                    self.warning("'house_id' not in house_data", house_id=house_id)
+                    house_data = dict(house_data, **({"house_id":house_id}))
+                    input("debug")
+                yield house_data
+            else:
+                data = data[1]
+                yield json.loads(data)
 
     def __transformer__(self, data, t_dict, t_clean_dict):
         '''__transformer__
