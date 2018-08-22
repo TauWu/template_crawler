@@ -9,6 +9,7 @@ from constant.config import REQUEST_CFG
 
 import json, re
 from lxml import etree
+from copy import deepcopy
 
 class HTTPListRequest(LogBase):
 
@@ -74,7 +75,7 @@ class HTTPListRequest(LogBase):
                     # break   # debug code
 
                     
-        else:
+        elif method == 1:
         
             mutil_req_iter = HTTPListRequest.__mutil_req__(self.project_name, method, mutil, crawler)
 
@@ -94,11 +95,38 @@ class HTTPListRequest(LogBase):
                             self.info("Show total pages =>", total=total)
                         except Exception as e:
                             self.error('Total break Error', err=e)
-
+                        
                         yield res
                     
                     if cursor > int(total):                   
                         break
+        
+        else:
+
+            mutil_req_iter = HTTPListRequest.__mutil_req__(self.project_name, method, mutil, crawler)
+
+            for mutil_req, cursor in mutil_req_iter:
+
+                total = 999999
+
+                if "headers" in self.sys.keys():
+                    mutil_req.add_headers(json.loads(self.sys['headers']))
+                    res_list  = mutil_req.req_content_list
+
+                    for res in res_list:
+
+                        try:
+                            res = json.loads(res[0].decode('utf-8'))
+                            total = res[crawler['total']]
+                            self.info("Show total pages =>", total=total)
+                        except Exception as e:
+                            self.error('Total break Error', err=e)
+                        
+                        yield res
+                    
+                    if cursor > int(total):                   
+                        break
+
 
 
     @staticmethod
@@ -122,7 +150,7 @@ class HTTPListRequest(LogBase):
             data       = json.loads(crawler['data'])
 
         if 'data_key' in crawler.keys():
-            data_key   = json.loads(crawler['data_key'])
+            data_key   = crawler['data_key']
 
         if method == 1:
             yield from HTTPListRequest.__req_get_api__(project_name, mutil, url_tpl, params)
@@ -184,8 +212,8 @@ class HTTPListRequest(LogBase):
             for idxx in range(0, mutil):
                 url_list.append(url_tpl.format(idx+idxx))
                 data[data_key] = idx+idxx
-                data_list.append(data)
-            idx += 1
+                data_list.append(deepcopy(data))
+            idx += mutil
             yield ProxiesRequests(url_list, project_name, data_list=data_list), idx
 
 

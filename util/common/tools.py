@@ -8,6 +8,12 @@ def finder(result, find):
     result:
         result after find by path.
     '''
+    if isinstance(find, str):
+        find = [find]
+    elif isinstance(find, list):
+        pass
+    else:
+        raise ValueError('Bad find type')
 
     try:
         if len(find) == 1:
