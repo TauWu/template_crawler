@@ -29,7 +29,7 @@ def ziroom_extra(project_name, rid, rtn_data):
         if end > 1:
             rds = RedisController(int(conf_kv_func("ziroom.sys_config", all=True)['redis_db']), project_name)
             for idx in range(1, end):
-                rds.__update_dict_to_redis__(rid-idx, {})
+                rds.__update_dict_to_redis__(rid-idx, {"house_id":str(rid-idx)})
                 
     # Extra func for price.
     try:
