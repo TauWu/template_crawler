@@ -61,7 +61,7 @@ Template Crawler | [@TauWu](https://github.com/TauWu/) | 2018-07-19 | Linux (Bas
 - [ ] Price Trend Prediction
 
 ## Flow Chart
-*TODO*
+*__TODO__*
 
 ## Requirements
 
@@ -114,7 +114,7 @@ pip3 install pytesseract
 
 ## Crawler Types
 
-For different websites, there are some methods to get its data. For instance, you can get house info list from externally exposed HTTP APIs, howerver, some sites don't provide them, because some sites are rendered by templates. Thus, we are supposed to provide different types to slove these problems. And here is the `enumeration of carwler types`.
+For different websites, there are some methods to get its data. For instance, you can get house info list from externally exposed HTTP APIs, howerver, some sites don't provide them, because some sites are rendered by templates. Thus, we are supposed to provide different types to slove these problems. And here is the **enumeration of carwler types**.
 
 Type No. | Crawler methods
 :-: | :-:
@@ -153,7 +153,7 @@ Test code when develop or debug, this folder won't be pushed to git.
 Visual Studio Code config files, this folder won't be pushed to git.
 
 ### config
-Contains crawler, elt and sys config files here. File `sys.cfg` won't be pushed to git.
+Contains crawler, elt and sys config files here. File **sys.cfg** won't be pushed to git.
 
 ### constant
 Constant value, config, dict and so on.
@@ -170,18 +170,18 @@ Try to do it!
 Save log files here, contains subfolders named by different projects.
 
 ### module
-Contains many modules used by `do`.
-- `config` => Read config files in *./config* and return it.
+Contains many modules used by **do**.
+- `config` => Read config files in **./config** and return it.
 - `database` => Create and execute SQL string
-- `parser` => Parse the data from request file one by one by lxml or json module, and then `save them into redis server`.
-	- `detail.py` => Parser detail webpage or HTTP API json and *update* the dict to redis.
-	- `list.py` => Parser list webpage or HTTP API json and *update* the dict to redis.
+- `parser` => Parse the data from request file one by one by lxml or json module, and then **save them into redis server**.
+	- `detail.py` => Parser detail webpage or HTTP API json and **update** the dict to redis.
+	- `list.py` => Parser list webpage or HTTP API json and **update** the dict to redis.
 	- `extra.py` => Extra function for this crawler, for instance, ziroom's house price is showed by a picture, we should do extra for it.
 - `redis` => Redis scanner, scanning the redis-server to get request key list.
 - `request` => Mutil-Proxy-Request ordered list or detail url list by ProxiesRequest Module and yield the content to parser module.
 
 ### util
-Contains many base tools used by `do`, `module`.
+Contains many base tools used by **do**, **module**.
 - `common` => Common extensions here.
 	- `date.py` => Class Time and DateTime.
 	- `logger.py` => Class LogBase.
@@ -207,4 +207,4 @@ Contains many base tools used by `do`, `module`.
 
 1. Here is the crawl difficulty's order of different websites: ziroom > lianjia > qk.
 2. When you get the rent price of ziroom, you're supposed to download a temp img, and then, get the string from img by using OCR tools. Ziroom website will give the index of each number and you should joint it.
-3. `TODO` This project use gevent to download webpage and use `asdef` and `await` request to download imgs. It can be quicker if turn `gevent` + `asdef` asynchronous mode to `gevent` mode or `asdef` asynchronous mode, because the waste of exchange for threads.
+3. *__TODO__* This project use `gevent` to download webpage and use `asdef` and `await` request to download imgs. It can be quicker if turn `gevent` + `asdef` asynchronous mode to `gevent` mode or `asdef` asynchronous mode, because the waste of exchange for threads.
