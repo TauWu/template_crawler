@@ -24,11 +24,13 @@ Template Crawler | [@TauWu](https://github.com/TauWu/) | 2018-07-19 | Linux (Bas
 	- [x] Test House Info from [ZiRoom](http://sh.ziroom.com)
 	- [x] Test House Info from [qk365](http://www.qk365.com)
 	- [x] Test House Info from [lianjia](https://sh.lianjia.com)
+	- [x] Test House Info from [danke](https://www.dankegongyu.com)
 
 - [x] Full Test
 	- [x] Test Full House Info from [ZiRoom](http://sh.ziroom.com)
 	- [x] Test Full House Info from [qk365](http://www.qk365.com)
 	- [x] Test Full House Info from [lianjia](https://sh.lianjia.com)
+	- [x] Test Full House Info from [danke](https://www.dankegongyu.com)
 
 - [x] ETL Project
 	- [x] Extract Data from Redis
@@ -45,7 +47,11 @@ Template Crawler | [@TauWu](https://github.com/TauWu/) | 2018-07-19 | Linux (Bas
 - [x] Mail Monitor
 	- [x] Package email module.
 	- [x] Send mail when crawler finished.
-	- [  ] Send mail when etl finished.
+	- [x] Send mail when etl finished.
+
+- [ ] Mail Reporter
+	- [ ] Send mail with xlsx file with cron.
+
 
 ## Future TODOs
 
@@ -55,8 +61,7 @@ Template Crawler | [@TauWu](https://github.com/TauWu/) | 2018-07-19 | Linux (Bas
 - [ ] Price Trend Prediction
 
 ## Flow Chart
-
-> TODO
+*TODO*
 
 ## Requirements
 
@@ -158,64 +163,36 @@ SQL files here.
 
 ### do
 Try to do it!
-- `crawler.py`
-	> Do crawler.
-- `etl.py`
-	> Do etl project.
+- `crawler.py` => Do crawler.
+- `etl.py` => Do etl project.
 
 ### log
 Save log files here, contains subfolders named by different projects.
 
 ### module
 Contains many modules used by `do`.
-- config
-	> Read config files in `./config` and return it.
-- database
-	> Create and execute SQL string
-- parser
-	> Parse the data from request file one by one by lxml or json module, and then `save them into redis server`.
-	- detail.py
-		> Parser detail webpage or HTTP API json and `update` the dict to redis.
-	- list.py
-		> Parser list webpage or HTTP API json and `update` the dict to redis.
-	- extra.py
-		> Extra function for this crawler, for instance, ziroom's house price is showed by a picture, we should do extra for it.
-- redis
-	> Redis scanner, scanning the redis-server to get request key list.
-- request
-	> Mutil-Proxy-Request ordered list or detail url list by ProxiesRequest Module and yield the content to parser module.
+- `config` => Read config files in *./config* and return it.
+- `database` => Create and execute SQL string
+- `parser` => Parse the data from request file one by one by lxml or json module, and then `save them into redis server`.
+	- `detail.py` => Parser detail webpage or HTTP API json and *update* the dict to redis.
+	- `list.py` => Parser list webpage or HTTP API json and *update* the dict to redis.
+	- `extra.py` => Extra function for this crawler, for instance, ziroom's house price is showed by a picture, we should do extra for it.
+- `redis` => Redis scanner, scanning the redis-server to get request key list.
+- `request` => Mutil-Proxy-Request ordered list or detail url list by ProxiesRequest Module and yield the content to parser module.
 
 ### util
 Contains many base tools used by `do`, `module`.
-- common
-	> Common extensions here.
+- `common` => Common extensions here.
+	- `date.py` => Class Time and DateTime.
+	- `logger.py` => Class LogBase.
+	- `timeout.py` => Function set_timeout.
+	- `tools.py` => Tool functions.
 
-	- date.py
-		> Class Time and DateTime.
-
-	- logger.py
-		> Class LogBase.
-
-	- timeout.py
-		> Function set_timeout.
-
-	- tools.py
-		> Tool functions.
-
-- config
-	> Config reader and writer module.
-
-- database
-	> Database connector and executor.
-
-- redis
-	> Redis connector and executor.
-
-- web
-	> Mutil-Proxy-Request module and test.
-
-- xlsx
-	> Read and write xlsx files.
+- `config` => Config reader and writer module.
+- `database` => Database connector and executor.
+- `redis` => Redis connector and executor.
+- `web` => Mutil-Proxy-Request module and test.
+- `xlsx` => Read and write xlsx files.
 
 ## LICENSE
 
@@ -230,3 +207,4 @@ Contains many base tools used by `do`, `module`.
 
 1. Here is the crawl difficulty's order of different websites: ziroom > lianjia > qk.
 2. When you get the rent price of ziroom, you're supposed to download a temp img, and then, get the string from img by using OCR tools. Ziroom website will give the index of each number and you should joint it.
+3. `TODO` This project use gevent to download webpage and use `asdef` and `await` request to download imgs. It can be quicker if turn `gevent` + `asdef` asynchronous mode to `gevent` mode or `asdef` asynchronous mode, because the waste of exchange for threads.
