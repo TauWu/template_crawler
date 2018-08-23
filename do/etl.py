@@ -66,6 +66,16 @@ class Do(LogBase):
             ]
             self.etl_qk()
 
+        elif self.etl_name == "danke":
+            self.community_id_list  = list()
+            self.base_tbname = "house_base_infodk"
+            self.base_tbkeys = [
+                'house_id', 'area', 'house_type', 'house_code',
+                'de_fee_1', 'de_fee_6', 'de_fee_12', 'ser_fee_1', 'ser_fee_6', 'ser_fee_12',
+                'price', 'community_id', 'floor', 'orientation'
+            ]
+            self.etl_danke()
+
         msg = None
         sub = "Report for {} => {}".format(self.project_name, Time.ISO_date_str())
         
@@ -293,10 +303,11 @@ class Do(LogBase):
 
         # Clean data by lamdba functions.
         t_clean_dict = dict (
-            floor       = lambda f, data: ",".join(re.findall(r"楼层：(.+)层", f)[0].split('/')),
+            floor       = lambda f, data: ",".join([str(int(i)) for i in re.findall(r"楼层：(.+)层", f)[0].split('/')]),
             area        = lambda a, data: int(re.findall("([0-9.]+)", a)[0]),
             cw_busi     = lambda b, data: re.findall("(.+)公寓出租", b)[0],
-            orientation = lambda o, data: re.findall(r"朝向：(.+)", o)[0]
+            orientation = lambda o, data: re.findall(r"朝向：(.+)", o)[0],
+            house_type  = lambda t, data: re.findall(r'户型：(.+)', t)[0]
         )
 
         for data in e_data:
@@ -392,6 +403,148 @@ class Do(LogBase):
             self.db.update_data(self.community_tbname, data, self.community_tbkeys, community_id=data['community_id'])
             self.db.update_data(self.base_tbname, data, self.base_tbkeys, house_id=data['house_id'])
 
+
+######################### ETL DANKE #########################
+
+    def etl_danke(self):
+        '''etl_danke
+        ETL project for danke.
+        '''
+
+        e_data = self.__e_data_iter__
+        t_data = self.__t_danke__(e_data)
+        _      = self.__l_danke__(t_data)
+            
+    def __t_danke__(self, e_data):
+        '''__t_danke__
+        DanKe transformer.
+        '''
+        
+        self.db.execute(
+            "select max(cast(community_id as unsigned integer)) as max from community_info where source_from = 4 and enabled = 1"
+        )
+        data = self.db.cur.fetchone()
+        max_id = data["max"]
+        if max_id is None:
+            max_id = 0
+            
+        self.info("The max_id in community table for danke =>", max=max_id)
+
+        def get_community(data_dict):
+            '''get_community
+            Get new community id if it's not exists.
+            '''
+
+            try:
+
+                self.db.execute(
+                    "select community_id from community_info where source_from = 4 and lat = {lat} and lng = {lng} and enabled = 1".format(
+                        lat=data_dict['lat'], lng=data_dict['lng']
+                    )
+                )
+
+                data = self.db.cur.fetchone()
+                community_id = data["community_id"]
+                self.debug("Find community_id for danke in table SECCEED.",community_id=community_id, lat=data_dict['lat'], lng=data_dict['lng'])
+
+            except Exception:
+                self.warning("No community_id for danke in table equals this lat and lng.", lat=data_dict['lat'], lng=data_dict['lng'])
+
+                try:
+
+                    posi = ",".join([data_dict['lat'], data_dict['lng']])
+                    if posi not in self.community_id_list:
+                        self.community_id_list.append(posi)    
+                    community_id = max_id + 1 + self.community_id_list.index(posi)
+                    
+                except Exception as e:
+                    self.warn("No lat or lng is supported.", err=e)
+                    return data_dict
+            
+            data_dict["community_id"] = community_id
+            self.debug("Get community_id for danke house info.", community_id=community_id, lat=data_dict['lat'], lng=data_dict['lng'])
+            return data_dict
+
+        # Turn &#xxxx; to char.
+        def hex_to_str(hex_match):
+            hex_data = re.findall(r"[0-9A-Z]+", hex_match.group())[0]
+            return chr(int(hex_data, 16))
+
+        def html_to_str(html):
+            cpl = re.compile(r"&#x[0-9A-Z]+;")
+            html = re.sub(cpl, hex_to_str, html)
+            return html
+
+        # Turn &#88888; to char.
+        def dec_to_str(dec_match):
+            # print("*****", dec_match)
+            dec_data = re.findall(r'[0-9]+', dec_match.group())[0]
+            return chr(int(dec_data))
+
+        def html_to_str_dec(html):
+            cpl = re.compile(r"&#[0-9]+;")
+            html = re.sub(cpl, dec_to_str, html)
+            return html
+            
+        t_dict = dict(
+            house_id        = "house_id",
+            community_id    = "",
+            community_name  = "comm_name",
+            lat             = "lat",
+            lng             = "lng",
+            cw_district     = "district",
+            cw_busi         = "busi_name",
+            cw_detail       = "",
+            house_type      = "house_type",
+            orientation     = "orientation",
+            price           = "price",
+            floor           = "floor",
+            area            = "area",
+            house_code      = "house_code",
+            ser_fee_12      = "ser_fee_12",
+            ser_fee_6       = "ser_fee_6",
+            ser_fee_1       = "ser_fee_1",
+            de_fee_12       = "de_fee_12",
+            de_fee_6        = "de_fee_6",
+            de_fee_1        = "de_fee_1"
+        )
+
+        # Clean data by lamdba functions.
+        t_clean_dict = dict (
+            floor           = lambda f, data: ",".join((re.findall(r"楼层：(.+)层", f)[0]).split('/')),
+            area            = lambda a, data: int(re.findall("([0-9.]+)", a)[0]),
+            orientation     = lambda o, data: re.findall(r"朝向：(.+)", o)[0],
+            cw_busi         = lambda b, data: html_to_str_dec(b),
+            community_name  = lambda c, data: html_to_str(c),
+            house_type      = lambda t, data: re.findall(r'户型：(.+)', t)[0],
+            house_code      = lambda c, data: re.findall(r'编号：(.+)', c)[0],
+            ser_fee_12      = lambda f, data: re.findall(r'([0-9]+)', f)[0],
+            ser_fee_6       = lambda f, data: re.findall(r'([0-9]+)', f)[0],
+            ser_fee_1       = lambda f, data: re.findall(r'([0-9]+)', f)[0],
+            de_fee_12       = lambda f, data: re.findall(r'([0-9]+)', f)[0],
+            de_fee_6        = lambda f, data: re.findall(r'([0-9]+)', f)[0],
+            de_fee_1        = lambda f, data: re.findall(r'([0-9]+)', f)[0]
+        )
+
+        for data in e_data:
+            
+            data_dict = self.__transformer__(data, t_dict, t_clean_dict)
+
+            data_dict["source_from"] = 4
+            data_dict["source_name"] = "蛋壳"
+
+            data_dict = get_community(data_dict)
+            data_dict = self.__bd_mapper__(data_dict)
+
+            yield data_dict
+
+    def __l_danke__(self, t_data):
+        # from pprint import pprint
+
+        for data in t_data:
+            if data['community_id'] is not None:
+                self.db.update_data(self.community_tbname, data, self.community_tbkeys, source_from=data["source_from"], lat=data['lat'], lng=data['lng'])
+                self.db.update_data(self.base_tbname, data, self.base_tbkeys, house_id=data['house_id'])
 
 ######################### BAIDU MAP #########################
 

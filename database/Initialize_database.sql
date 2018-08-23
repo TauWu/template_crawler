@@ -36,7 +36,7 @@ CREATE TABLE `house_base_infolj` (
   `modify_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最近修改时间',
 
   PRIMARY KEY (`house_info_id`),
-  KEY `community_id` (`community_id`,`enabled`)
+  KEY `house_id` (`house_id`,`enabled`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='HOUSE_BASE_INFOLJ';
 
 -- Create table for saving Qingke house base info.
@@ -58,7 +58,7 @@ CREATE TABLE `house_base_infoqk` (
   `modify_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最近修改时间',
   
   PRIMARY KEY (`house_info_id`),
-  KEY `community_id` (`community_id`,`enabled`)
+  KEY `house_id` (`house_id`,`enabled`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='HOUSE_BASE_INFOQK';
 
 -- Create table for saving Ziroom house base info.
@@ -81,8 +81,37 @@ CREATE TABLE `house_base_infozr` (
   `modify_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最近修改时间',
   
   PRIMARY KEY (`house_info_id`),
-  KEY `community_id` (`house_id`,`enabled`)
+  KEY `house_id` (`house_id`,`enabled`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='HOUSE_BASE_INFOZR';
+
+-- Create table for saving Danke house base info.
+DROP TABLE IF EXISTS `house_base_infodk`;
+CREATE TABLE `house_base_infodk` (
+  `house_info_id`   int(11) NOT NULL AUTO_INCREMENT COMMENT '自增 ID',
+  `house_id`        varchar(60) NOT NULL DEFAULT '' COMMENT '源房屋 ID',
+  `house_code`      varchar(60) NOT NULL DEFAULT '' COMMENT '源房屋编号',
+  `community_id`    varchar(60) NOT NULL DEFAULT '' COMMENT '源地标 ID',
+  `orientation`     varchar(100) NOT NULL DEFAULT '' COMMENT '房间朝向',
+  `floor`           varchar(20) NOT NULL DEFAULT '' COMMENT '楼层',
+  `area`            varchar(20) NOT NULL DEFAULT '' COMMENT '面积',
+  `price`           decimal(18,2) NOT NULL DEFAULT 0.0 COMMENT '价格',
+  `ser_fee_12`      decimal(18,2) NOT NULL DEFAULT 0.0 COMMENT '按年服务费（单位：元/年）',
+  `ser_fee_6`       decimal(18,2) NOT NULL DEFAULT 0.0 COMMENT '按半年服务费（单位：元/年）',
+  `ser_fee_1`       decimal(18,2) NOT NULL DEFAULT 0.0 COMMENT '按月服务费（单位：元/年）',
+  `de_fee_12`       decimal(18,2) NOT NULL DEFAULT 0.0 COMMENT '按年押金（单位：元）',
+  `de_fee_6`        decimal(18,2) NOT NULL DEFAULT 0.0 COMMENT '按半年押金（单位：元）',
+  `de_fee_1`        decimal(18,2) NOT NULL DEFAULT 0.0 COMMENT '按月押金（单位：元）',
+  `house_type`      varchar(20) NOT NULL DEFAULT '' COMMENT '房型',
+
+  `enabled`     int(1) NOT NULL DEFAULT 1 COMMENT '是否删除',
+  `create_by`   varchar(100) NOT NULL DEFAULT '' COMMENT '创建人',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `modify_by`   varchar(100) NOT NULL DEFAULT '' COMMENT '修改人',
+  `modify_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最近修改时间',
+  
+  PRIMARY KEY (`house_info_id`),
+  KEY `house_id` (`house_id`,`enabled`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='HOUSE_BASE_INFODK';
 
 -- Create table for saving community base info.
 DROP TABLE IF EXISTS `community_info`;
