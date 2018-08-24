@@ -52,7 +52,7 @@ class Do(LogBase):
             self.community_id_list  = list()
             self.base_tbname        = "house_base_infozr"
             self.base_tbkeys        = [
-                'house_id', 'community_id', 'price',
+                'house_id', 'community_id', 'price', 'area',
                 'house_type', 'floor', 'status', 'house_code'
             ]
             
@@ -304,7 +304,7 @@ class Do(LogBase):
         # Clean data by lamdba functions.
         t_clean_dict = dict (
             floor       = lambda f, data: ",".join([str(int(i)) for i in re.findall(r"楼层：(.+)层", f)[0].split('/')]),
-            area        = lambda a, data: int(re.findall("([0-9.]+)", a)[0]),
+            area        = lambda a, data: float(re.findall("([0-9.]+)", a)[0]),
             cw_busi     = lambda b, data: re.findall("(.+)公寓出租", b)[0],
             orientation = lambda o, data: re.findall(r"朝向：(.+)", o)[0],
             house_type  = lambda t, data: re.findall(r'户型：(.+)', t)[0]

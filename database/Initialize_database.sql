@@ -69,6 +69,7 @@ CREATE TABLE `house_base_infozr` (
   `house_code`    varchar(30) NOT NULL DEFAULT '' COMMENT '房间编号',
   `price`         decimal(18,2) NOT NULL DEFAULT 0.0 COMMENT '价格',
   `floor`         varchar(20) NOT NULL DEFAULT '' COMMENT '楼层',
+  `area`            varchar(20) NOT NULL DEFAULT '' COMMENT '面积',
   `house_type`    varchar(20) NOT NULL DEFAULT '' COMMENT '户型',
   `community_id`  varchar(60) NOT NULL DEFAULT '' COMMENT '小区ID',
   `status`        varchar(20) NOT NULL DEFAULT '' COMMENT '房间状态',
@@ -243,10 +244,10 @@ INNER JOIN `community_info` AS `c`
 DROP VIEW IF EXISTS `v_ziroom_house_info`;
 CREATE VIEW `v_ziroom_house_info` AS
 SELECT 
-  `zr`.`house_id`, `zr`.`price`,`zr`.`floor`, `zr`.`house_type`, 
-  `zr`.`community_id`,`zr`.`enabled`, `zr`.`create_time`, 
-  `zr`.`modify_time`, `c`.`community_name`, `zr`.`status`,
-  `c`.`lat`,`c`.`lng`, `c`.`cw_district`,`c`.`cw_busi`,
+  `zr`.`house_id`, `zr`.`price`,`zr`.`floor`, `zr`.`area`, 
+  `zr`.`house_type`, `zr`.`community_id`,`zr`.`enabled`,
+  `zr`.`create_time`, `zr`.`modify_time`, `c`.`community_name`,
+  `zr`.`status`, `c`.`lat`,`c`.`lng`, `c`.`cw_district`,`c`.`cw_busi`,
   `c`.`cw_detail`, `c`.`bd_province`,`c`.`bd_city`,`c`.`bd_district`,
   `c`.`bd_busi`,`c`.`bd_street`,`c`.`bd_detail`,`c`.`bd_adcode`
 FROM `house_base_infozr` AS `zr`
