@@ -7,11 +7,7 @@ from constant.config import REDIS_CFG
 from util.common.logger import LogBase
 
 def equal(object1, object2):
-    if object1 == object2:
-        return True
-    else:
-        return False
-
+    return True if object1 == object2 else False
 
 class RedisController(LogBase):
         
@@ -47,10 +43,8 @@ class RedisController(LogBase):
     def rget(self, key):
         try:
             res = self._redis_conn.get(key)
-            if res is not None:
-                return res.decode('utf-8')
-            else:
-                return None
+            return None if res is None else res.decode('utf-8')
+            
         except Exception as e:
             self.error("Get value from redis error!", key=key, err=e)
             return None

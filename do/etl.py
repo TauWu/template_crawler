@@ -197,11 +197,8 @@ class Do(LogBase):
         )
 
         def clean_price(p, data):
-            '''clean_price
-            '''
-            if p is not None:
-                return p
-            return data["price"]
+            '''clean_price'''
+            return p if p is not None else data["price"]
         
         for data in e_data:
             data_dict = self.__transformer__(data, t_dict, t_clean_dict)
@@ -240,9 +237,7 @@ class Do(LogBase):
             "select max(cast(community_id as unsigned integer)) as max from community_info where source_from = 2 and enabled = 1"
         )
         data = self.db.cur.fetchone()
-        max_id = data["max"]
-        if max_id is None:
-            max_id = 0
+        max_id = 0 if data["max"] is None else data["max"]
             
         self.info("The max_id in community table for ziroom =>", max=max_id)
 
@@ -424,9 +419,7 @@ class Do(LogBase):
             "select max(cast(community_id as unsigned integer)) as max from community_info where source_from = 4 and enabled = 1"
         )
         data = self.db.cur.fetchone()
-        max_id = data["max"]
-        if max_id is None:
-            max_id = 0
+        max_id = 0 if data["max"] is None else data["max"]
             
         self.info("The max_id in community table for danke =>", max=max_id)
 

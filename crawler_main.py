@@ -13,10 +13,9 @@ if __name__ == "__main__":
     '''Crawler Main
     Start crawl websites with appointed config.     
     '''
-    # You will get appointed crawler name from command.
-    if len(argv) == 1: crawler_name = "sample"
-    elif len(argv) == 2: crawler_name = argv[1]
-    
+    # You will get appointed crawler name from command.  
+    crawler_name = "sample" if len(argv) == 1 else argv[1]
     crawler = Do(crawler_name)
+
     # crawler.rds_to_xlsx("{}.xlsx".format(crawler_name), crawler_name)
     crawler.do()

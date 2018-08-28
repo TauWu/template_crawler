@@ -14,6 +14,7 @@ from constant.config import conf_kv_func
 import asyncio
 
 from util.common.logger import LogBase
+# from module.mail.mail import Mail
 
 # 代理 用户验证部分 - 一天检查一次，所以多次调用时不重复此步骤
 class ProxiesHeaders():
