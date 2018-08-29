@@ -7,6 +7,8 @@ import sys
 from .date import Time
 import os
 import traceback
+from constant.config import LOGGER_CFG
+from constant.dict import LOGGER_LEVEL_DICT
 
 class LogBase(object):
     """Log base service
@@ -18,7 +20,8 @@ class LogBase(object):
             project_name
             logger_name
         '''
-        logger = logging.getLogger(logger_name)
+        logger  = logging.getLogger(logger_name)
+        level   = LOGGER_LEVEL_DICT[LOGGER_CFG["level"]]
 
         # You should check if the handler is existed to avoid repeat log records.
         if not logger.handlers:
@@ -47,12 +50,13 @@ class LogBase(object):
             
             logger.addHandler(self.file_handler)
             logger.addHandler(self.stream_handler)
-            logger.setLevel(logging.INFO)
+            logger.setLevel(level)
 
         self.logger = logger
 
 
     def debug(self, msg, **kwargs):
+        '''override debug'''
         self.logger.debug(
             "[DBG] %s %s"%(
                 msg, " ".join(["{}:{}".format(k, v) for k, v in kwargs.items()])
@@ -60,6 +64,7 @@ class LogBase(object):
         )
 
     def info(self, msg, **kwargs):
+        '''override info'''
         self.logger.info(
             "[INF] %s %s"%(
                 msg, " ".join(["{}:{}".format(k, v) for k, v in kwargs.items()])
@@ -67,6 +72,7 @@ class LogBase(object):
         )
 
     def warning(self, msg, **kwargs):
+        '''override warning'''
         if self.logger.level == logging.INFO:
             self.logger.warning(
                 "[WRN] %s %s"%(
@@ -82,6 +88,7 @@ class LogBase(object):
             )
         
     def error(self, msg, **kwargs):
+        '''override error'''
         tb = traceback.format_exc()
         self.logger.error(
             "[ERR] %s %s \n%s"%(
@@ -90,6 +97,7 @@ class LogBase(object):
         )
 
     def fatal(self, msg, **kwargs):
+        '''override fatal'''
         tb = traceback.format_exc()
         self.logger.fatal(
             "[FTL] %s %s\n%s"%(
@@ -98,25 +106,25 @@ class LogBase(object):
         )
 
     def dbg(self, msg, **kwargs):
-        "rename debug"
+        "alias debug"
         self.debug(msg, **kwargs)
 
     def inf(self, msg, **kwargs):
-        "rename info"
+        "alias info"
         self.info(msg, **kwargs)
 
     def wrn(self, msg, **kwargs):
-        "rename warning"
+        "alias warning"
         self.warning(msg, **kwargs)
 
     def warn(self, msg, **kwargs):
-        "rename warning"
+        "alias warning"
         self.warning(msg, **kwargs)
 
     def err(self, msg, **kwargs):
-        "rename error"
+        "alias error"
         self.error(msg, **kwargs)
 
     def ftl(self, msg, **kwargs):
-        "rename fatal"
+        "alias fatal"
         self.fatal(msg, **kwargs)
