@@ -2,6 +2,7 @@
 # Database operator
 from util.database import DBController
 from copy import deepcopy
+import decimal
 
 NO_DATA         = 0
 DATA_CHANGE     = 1
@@ -92,6 +93,8 @@ class DBOpter(DBController):
         insert_tpl      = "insert into {tb_name} ({k_val}) values ({v_val})"
         update_tpl      = "update {tb_name} set enabled = 0 where {kv_val}"
 
+        print("******")
+
         # Get data from t(ransformer) module.
         for k, v in zip(data.keys(), data.values()):
             if k not in use:
@@ -102,6 +105,8 @@ class DBOpter(DBController):
                 v_list.append(str(v))
 
         raw_v_list = deepcopy(v_list)
+
+        print("******", v_list, raw_v_list)
 
         for k, v in zip(data.keys(), data.values()):
             if k not in use:
@@ -116,7 +121,7 @@ class DBOpter(DBController):
                         v_list.append(str(v_v))
                     v_list_list.append(v_list)
                     v_list = deepcopy(raw_v_list)
-
+        
         # Check the data if existed.
         for v_list in v_list_list:
             sql_kv_val = dict()
@@ -149,7 +154,7 @@ class DBOpter(DBController):
                 col_name=",".join(["`{}`".format(k) for k in value_kv.keys()]),
                 kv_val=kv_val
             )
-
+            
             try:
                 if count == 0:
                     self.info("NO_DATA, insert", key=kv_val)
@@ -158,6 +163,9 @@ class DBOpter(DBController):
                 else:
                     self.execute(select_dtl_sql)
                     db_data = self.cur.fetchone()
+                    for v_kv in value_kv.items():
+                        if v_kv[0] in ['rent', 'deposit', 'service_charge']:
+                            value_kv[v_kv[0]] = decimal.Decimal(v_kv[1])
                     if db_data == value_kv:
                         self.info("DATA_EQUAL, pass", key=kv_val)
                     else:
@@ -212,6 +220,8 @@ class DBOpter(DBController):
             res1 = {k:v for k, v in zip(data.keys(), data.values()) if (v is not None and k in use)}
 
             for kv in res1.items():
+
+                print(kv)
 
                 if kv[0].endswith("id"):
                     continue
