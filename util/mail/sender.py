@@ -11,13 +11,19 @@ from util.common.logger import LogBase
 
 class Sender():
 
-    def __init__(self, msg="", subject=""):
+    def __init__(self, msg="", subject="", recvers=None):
         '''Sender
         params:
             msg:     Content
             subject: Subject
         '''
-        self.recvers = EMAIL_CFG['recver'].split(',')
+        if recvers is None:
+            self.recvers = EMAIL_CFG['recver'].split(',')
+        else:
+            if isinstance(recvers, list):
+                self.recvers = recvers
+            else:
+                self.recvers = recvers.split(',')
         self.logger = LogBase('email', "email_sender")
         self.__smtp_predo__
 
@@ -25,7 +31,7 @@ class Sender():
         self.msg.attach(MIMEText(msg, 'html', 'utf-8'))
 
         self.msg['From'] = formataddr([EMAIL_CFG['sender_name'], EMAIL_CFG['sender']])
-        self.msg['To'] = formataddr([EMAIL_CFG['recver_name'], EMAIL_CFG['recver']])
+        self.msg['To'] = formataddr(["", ",".join(self.recvers)])
         self.msg['Subject'] = Header(subject, 'utf-8')
 
     def add_attachment(self, filename, filepath):
