@@ -4,6 +4,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.header import Header
+from email.utils import formataddr
 
 from constant.config import EMAIL_CFG
 from util.common.logger import LogBase
@@ -23,8 +24,8 @@ class Sender():
         self.msg = MIMEMultipart()
         self.msg.attach(MIMEText(msg, 'html', 'utf-8'))
 
-        self.msg['From'] = Header(EMAIL_CFG['sender_name'], 'utf-8')
-        self.msg['To'] = Header(EMAIL_CFG['recver_name'], 'utf-8')
+        self.msg['From'] = formataddr([EMAIL_CFG['sender_name'], EMAIL_CFG['sender']])
+        self.msg['To'] = formataddr([EMAIL_CFG['recver_name'], EMAIL_CFG['recver']])
         self.msg['Subject'] = Header(subject, 'utf-8')
 
     def add_attachment(self, filename, filepath):
