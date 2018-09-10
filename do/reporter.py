@@ -48,6 +48,9 @@ class Do():
         if not os.path.exists(RPT_PATH):
             os.mkdir(RPT_PATH)
 
+        if not os.path.exists(XLSX_PATH):
+            os.mkdir(XLSX_PATH)
+
         path = "{xlsx}/{filename}.xlsx".format(
             xlsx        = XLSX_PATH,
             filename    = sheetname
