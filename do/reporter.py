@@ -15,11 +15,6 @@ class Do():
     def __init__(self, rpt_name):
         self.rpt_name   = rpt_name
         self.rpt_conf   = RPTerConfigReader.rpter_config(rpt_name)
-        self.sender     = Sender(
-            msg     = "%s\n数据采样时间：%s"%(self.rpt_conf['recv']['recv_msg'], Time.now_date_str()),
-            subject = "%s => %s"%(self.rpt_conf['recv']['recv_sub'], Time.now_date_str()),
-            recvers = self.rpt_conf['recv']['recv_mail']
-        )
         self.db         = DBController(rpt_name)
 
     def do(self):
@@ -27,6 +22,12 @@ class Do():
         qk_path = self.data_from_db_qk
         dk_path = self.data_from_db_dk
         zr_path = self.data_from_db_zr
+
+        self.sender     = Sender(
+            msg     = "%s\n数据采样时间：%s"%(self.rpt_conf['recv']['recv_msg'], Time.now_date_str()),
+            subject = "%s => %s"%(self.rpt_conf['recv']['recv_sub'], Time.now_date_str()),
+            recvers = self.rpt_conf['recv']['recv_mail']
+        )
 
         self.sender.add_attachment(*lj_path)
         self.sender.add_attachment(*qk_path)
