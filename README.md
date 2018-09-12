@@ -61,7 +61,7 @@ Template Crawler | [@TauWu](https://github.com/TauWu/) | 2018-07-19 | Linux (Bas
 - [ ] Price Trend Prediction
 
 ## Flow Chart
-*__TODO__*
+![image](https://raw.githubusercontent.com/TauWu/spider_anjuke/master/bin/template_crawler.jpg)
 
 ## Requirements
 
