@@ -17,5 +17,7 @@ if __name__ == "__main__":
     crawler_name = "sample" if len(argv) == 1 else argv[1]
     crawler = Do(crawler_name)
 
-    # crawler.rds_to_xlsx("{}.xlsx".format(crawler_name), crawler_name)
     crawler.do()
+
+    # Here is a test for data from redis to xlsx files.
+    # crawler.rds_to_xlsx("{}.xlsx".format(crawler_name), crawler_name)

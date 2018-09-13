@@ -43,39 +43,19 @@ class Do(LogBase):
 
     def do(self):
         '''do
-        Start Process from here.
+        Start Process from here. Here is the task list:
+        - Gather list data.
+        - Gather detail data.
+        - Send process email.
+
         '''
-        p1s = Time.ISO_time_str()
-        self.info("Process 1 Start")
         self.list_res_iter      = self.__req_list__
         self.__parser_list__
-        p1e = Time.ISO_time_str()
         
-        p2s = Time.ISO_time_str()
-        self.info("Process 2 Start")
         self.detail_res_iter    = self.__req_detail__
         self.__parser_detail__
-        p2e = Time.ISO_time_str()
 
-        msg = None
-        sub = "Report for {} => {}".format(self.project_name, Time.ISO_date_str())
-        
-        with open("./constant/crawler_report.tpl") as r:
-            msg = r.read()
-        msg = msg.format(
-            sub=sub, p1s=p1s, p1e=p1e,
-            p2s=p2s, p2e=p2e            
-        )
-
-        attachment = {
-            "{}.log".format(
-                self.project_name
-            ):"./log/{}/{}.log".format(
-                self.project_name, Time.now_date_str()
-            )
-        }
-
-        Mail.send(msg, sub, attachment)
+        self.__send_mail__
 
         self.info("Process End.")
 
@@ -95,20 +75,29 @@ class Do(LogBase):
         '''__req_list__
         Start a request to get list info from list websites/APIs.
         '''
-        # You are supposed to create a child process to do this.
-        
+
+        self.info("Process 1 Start")
+        self.p1s = Time.ISO_time_str()
+
         req = HTTPListRequest(self.crawler_conf, self.project_name)
         yield from req.list_res_iter
+
+        self.p1e = Time.ISO_time_str()
 
     @property
     def __req_detail__(self):
         '''__req_detail__
         Start a request to get detail info from web page.
         '''
-        # You are supposed to create a child process to do this.
+
+        self.info("Process 2 Start")
+        self.p2s = Time.ISO_time_str()
 
         req = HTTPDetailRequest(self.rds, self.crawler_conf, self.project_name)
         yield from req.detail_res_cookie_iter
+
+        self.p2e = Time.ISO_time_str()
+
 
     @property
     def __parser_list__(self):
@@ -125,6 +114,29 @@ class Do(LogBase):
         '''
         parser = ParserDetail(self.project_name, self.crawler_name, self.detail_res_iter, self.crawler_conf, self.rds)
         parser.save
+
+    @property
+    def __send_mail__(self):
+        msg = None
+        sub = "Report for {} => {}".format(self.project_name, Time.ISO_date_str())
+        
+        with open("./constant/crawler_report.tpl") as r:
+            msg = r.read()
+
+        msg = msg.format(
+            sub=sub, p1s=self.p1s, p1e=self.p1e,
+            p2s=self.p2s, p2e=self.p2e            
+        )
+
+        attachment = {
+            "{}.log".format(
+                self.project_name
+            ):"./log/{}/{}.log".format(
+                self.project_name, Time.now_date_str()
+            )
+        }
+
+        Mail.send(msg, sub, attachment)
 
     def rds_to_xlsx(self, file_name, sheet_name):
         '''rds_to_xlsx
