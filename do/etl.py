@@ -280,7 +280,7 @@ class Do(LogBase):
         t_dict = dict(
             house_id        = "house_id",
             community_id    = "",
-            community_name  = "",
+            community_name  = "comm_name",
             lat             = "lat",
             lng             = "lng",
             cw_district     = "",
@@ -302,7 +302,9 @@ class Do(LogBase):
             area        = lambda a, data: float(re.findall("([0-9.]+)", a)[0]),
             cw_busi     = lambda b, data: re.findall("(.+)公寓出租", b)[0],
             orientation = lambda o, data: re.findall(r"朝向：(.+)", o)[0],
-            house_type  = lambda t, data: re.findall(r'户型：(.+)', t)[0]
+            house_type  = lambda t, data: re.findall(r'户型：(.+)', t)[0],
+            community_name=lambda c, data: c.replace('租房信息','')
+            
         )
 
         for data in e_data:
@@ -533,7 +535,7 @@ class Do(LogBase):
 
     def __l_danke__(self, t_data):
         # from pprint import pprint
-
+        self.db.reInitializeTableData(self.base_tbname)
         for data in t_data:
             if data['community_id'] is not None:
                 self.db.update_data(self.community_tbname, data, self.community_tbkeys, source_from=data["source_from"], lat=data['lat'], lng=data['lng'])

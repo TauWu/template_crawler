@@ -242,4 +242,13 @@ class DBOpter(DBController):
         else:
             return NO_DATA
 
-            
+    #蛋壳数据入库时候，先把库里数据设置为enbale=0,
+    # 避免造成。第一次拉到数据，后边拉不到，数据不会更新
+    def  reInitializeTableData(self,tb_name):
+        re_table_data_sql   = "update {tb_name} set enabled = 0".format(tb_name=tb_name)
+        try:
+                self.execute(re_table_data_sql)
+        except Exception:
+                self._conn.rollback()
+        else:
+                self._conn.commit()           
